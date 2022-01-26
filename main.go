@@ -12,9 +12,9 @@ import (
         "github.com/go-resty/resty/v2"
 )
 
-func gen_api_message(api_key_password string, api_key_secret string, time_current int64, request_method string, request_path string) string{
+func gen_api_message(api_key_password string, api_key_secret string, time_current string, request_method string, request_path string) string{
 
-    message := strconv.FormatInt(time_current, 10) + request_method + request_path //construct prehase message
+    message := time_current + request_method + request_path //construct prehase message
 
     decoded_secret, err := base64.StdEncoding.DecodeString(api_key_secret) //decode base64 encoded api secret
     if err != nil {
@@ -37,20 +37,22 @@ func main(){
     request_method := "GET"
     request_path := "/accounts"
    
-    time_current := time.Now().Unix() //1000 //time in ms
+    time_current := strconv.FormatInt(time.Now().Unix(), 10) //time in ms
     message_hashed := gen_api_message(api_key_password, api_key_secret, time_current, request_method, request_path)
 
+    //REST client
     client := resty.New()
     resp, err := client.R().
         SetHeader("Accept", "application/json"). 
         SetHeaders(map[string] string {
             "CB-ACCESS-KEY" : api_key, 
             "CB-ACCESS-SIGN" : message_hashed, 
-            "CB-ACCESS-TIMESTAMP" : strconv.FormatInt(time_current, 10), 
+            "CB-ACCESS-TIMESTAMP" : time_current, 
             "CB-ACCESS-PASSPHRASE" : api_key_password, 
             "Content-Type" : "application/json"}).
         SetAuthToken(api_key).
         Get(api_host + request_path)
+
     fmt.Println("Response Info:")
     fmt.Println("  Error      :", err)
     fmt.Println("  Status Code:", resp.StatusCode())
