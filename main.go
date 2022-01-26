@@ -24,7 +24,7 @@ func main(){
 
     message := strconv.FormatInt(time_current, 10) + request_method + request_path //construct prehase message
 
-    fmt.Println("debug> raw message ", message)
+    fmt.Println("debug> raw message ", message) //debug
 
     decoded_secret, err := base64.StdEncoding.DecodeString(api_key_secret) //decode base64 encoded api secret
     if err != nil {
@@ -44,9 +44,13 @@ func main(){
 
     client := resty.New()
     resp, err := client.R().
-    SetHeader("Accept", "application/json"). 
-    SetHeaders(map[string] string {"CB-ACCESS-KEY" : api_key, "CB-ACCESS-SIGN" : message_hashed, "CB-ACCESS-TIMESTAMP" : strconv.FormatInt(time_current, 10), 
-    "CB-ACCESS-PASSPHRASE" : api_key_password, "Content-Type" : "application/json"}).
+        SetHeader("Accept", "application/json"). 
+        SetHeaders(map[string] string {
+            "CB-ACCESS-KEY" : api_key, 
+            "CB-ACCESS-SIGN" : message_hashed, 
+            "CB-ACCESS-TIMESTAMP" : strconv.FormatInt(time_current, 10), 
+            "CB-ACCESS-PASSPHRASE" : api_key_password, 
+            "Content-Type" : "application/json"}).
         SetAuthToken(api_key).
         Get(api_host + request_path)
         fmt.Println("Response Info:")
