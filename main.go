@@ -32,7 +32,6 @@ type apiAccount struct { //array to store API account struct
 }
 
 func gen_api_message(api_key_password string, api_key_secret string, time_current string, request_method string, request_path string) string{
-
     message := time_current + request_method + request_path //construct prehase message
 
     decoded_secret, err := base64.StdEncoding.DecodeString(api_key_secret) //decode base64 encoded api secret
@@ -41,10 +40,10 @@ func gen_api_message(api_key_password string, api_key_secret string, time_curren
         os.Exit(1)
     }
 
-    hash := hmac.New(sha256.New, []byte(decoded_secret))
-    hash.Write([]byte(message))
+    hash := hmac.New(sha256.New, []byte(decoded_secret)) //generate new SHA256 hmac based on decoded api secret
+    hash.Write([]byte(message)) //hash message using hmac
 
-    return base64.StdEncoding.EncodeToString(hash.Sum(nil))
+    return base64.StdEncoding.EncodeToString(hash.Sum(nil)) //return hashed message
 }
 
 func rest_handler(api_host string, api_key string, api_key_password string, api_key_secret string, request_method string, request_path string){
@@ -53,7 +52,7 @@ func rest_handler(api_host string, api_key string, api_key_password string, api_
     message_hashed := gen_api_message(api_key_password, api_key_secret, time_current, request_method, request_path) //create hashed message to send
 
     //REST client
-    client := resty.New()
+    client := resty.New() //create REST session
     resp, err := client.R().
         SetHeader("Accept", "application/json"). 
         SetHeaders(map[string] string {
@@ -107,7 +106,7 @@ func main() {
     }
 
     var config tomlConfig
-    if _, err := toml.DecodeFile(f, &config); err != nil {
+    if _, err := toml.DecodeFile(f, &config); err != nil { //decode TOML file
         fmt.Println("ERROR decoding toml configuration")
         os.Exit(1)
     }
