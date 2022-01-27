@@ -36,36 +36,9 @@ func gen_api_message(api_key_password string, api_key_secret string, time_curren
     return base64.StdEncoding.EncodeToString(hash.Sum(nil))
 }
 
-func main() {
-    f := "api.toml" //default configuration
-
-    if _, err := os.Stat(f); err != nil { //check configuration file exists
-        fmt.Println("ERROR " + f + " does not exist")
-        os.Exit(1)
-    }
-
-    var config tomlConfig
-    _, err := toml.DecodeFile(f, &config)
-    if err != nil {
-        fmt.Println("ERROR decoding toml configuration")
-        os.Exit(1)
-    }
-   
-    //store values from configuration file
-    api_host := config.Host
-    api_key := config.Key
-    api_key_password := config.Password
-    api_key_secret := config.Secret
-
-    request_method := "GET"
-    request_path := "/accounts"
-
-    //store current Unix time as int
-    time_current := strconv.FormatInt(time.Now().Unix(), 10)
-
-    //create hashed message to send 
-    message_hashed := gen_api_message(api_key_password, api_key_secret, time_current, request_method, request_path)
-
+func rest_handler(api_host string, api_key string, api_key_password string, api_key_secret string, request_method string, request_path string){
+    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
+    message_hashed := gen_api_message(api_key_password, api_key_secret, time_current, request_method, request_path) //create hashed message to send
     //REST client
     client := resty.New()
     resp, err := client.R().
@@ -79,6 +52,7 @@ func main() {
         SetAuthToken(api_key).
         Get(api_host + request_path)
 
+    // debug
     fmt.Println("Response Info:")
     fmt.Println("  Error      :", err)
     fmt.Println("  Status Code:", resp.StatusCode())
@@ -88,4 +62,29 @@ func main() {
     fmt.Println("  Received At:", resp.ReceivedAt())
     fmt.Println("  Body       :\n", resp)
     fmt.Println()
+}
+
+func main() {
+    f := "api.toml" //default configuration file
+    if _, err := os.Stat(f); err != nil { //check configuration file exists
+        fmt.Println("ERROR " + f + " does not exist")
+        os.Exit(1)
+    }
+
+    var config tomlConfig
+    if _, err := toml.DecodeFile(f, &config); err != nil {
+        fmt.Println("ERROR decoding toml configuration")
+        os.Exit(1)
+    }
+   
+    //store values from configuration file
+    api_host := config.Host
+    api_key := config.Key
+    api_key_password := config.Password
+    api_key_secret := config.Secret
+
+    request_method := "GET"
+    request_path := "/accounts"
+
+    rest_handler(api_host, api_key, api_key_password, api_key_secret, request_method, request_path)
 }
