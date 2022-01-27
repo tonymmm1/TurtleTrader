@@ -75,6 +75,11 @@ func rest_handler(api_host string, api_key string, api_key_password string, api_
     fmt.Println("  Body       :\n", resp)
     fmt.Println()
 
+    if resp.StatusCode() != 200 { //check if API request was sucessful before proceeding
+        fmt.Println("ERROR API request returned " + "\"" +resp.Status() + "\"")
+        os.Exit(1)
+    }
+
     //store REST Body as struct
     var api_accounts []apiAccount
     if err := json.Unmarshal(resp.Body(), &api_accounts); err != nil { //JSON unmarshal REST response body to store as struct
