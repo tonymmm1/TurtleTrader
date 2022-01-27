@@ -9,8 +9,16 @@ import (
         "strconv"
         "time"
 
+        "github.com/BurntSushi/toml"
         "github.com/go-resty/resty/v2"
 )
+
+type tomlConfig struct { //configuration toml file struct
+    Host string 
+    Key string
+    Password string
+    Secret string
+}
 
 func gen_api_message(api_key_password string, api_key_secret string, time_current string, request_method string, request_path string) string{
 
@@ -28,16 +36,34 @@ func gen_api_message(api_key_password string, api_key_secret string, time_curren
     return base64.StdEncoding.EncodeToString(hash.Sum(nil))
 }
 
-func main(){
+func main() {
+    f := "api.toml" //default configuration
 
-    api_host := "https://api-public.sandbox.exchange.coinbase.com"
-    api_key := ""
-    api_key_password := ""
-    api_key_secret := ""
+    if _, err := os.Stat(f); err != nil { //check configuration file exists
+        fmt.Println("ERROR " + f + " does not exist")
+        os.Exit(1)
+    }
+
+    var config tomlConfig
+    _, err := toml.DecodeFile(f, &config)
+    if err != nil {
+        fmt.Println("ERROR decoding toml configuration")
+        os.Exit(1)
+    }
+   
+    //store values from configuration file
+    api_host := config.Host
+    api_key := config.Key
+    api_key_password := config.Password
+    api_key_secret := config.Secret
+
     request_method := "GET"
     request_path := "/accounts"
-   
-    time_current := strconv.FormatInt(time.Now().Unix(), 10) //time in ms
+
+    //store current Unix time as int
+    time_current := strconv.FormatInt(time.Now().Unix(), 10)
+
+    //create hashed message to send 
     message_hashed := gen_api_message(api_key_password, api_key_secret, time_current, request_method, request_path)
 
     //REST client

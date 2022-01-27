@@ -1,0 +1,5 @@
+#Host = "https://api-public.sandbox.exchange.coinbase.com" #sandbox 
+#Host = "https://api.pro.coinbase.com" #production
+#Key = ""
+#Password = ""
+#Secret = ""
