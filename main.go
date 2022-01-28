@@ -1,6 +1,7 @@
 package main
 
 import (
+        "bufio"
         "crypto/hmac"
         "crypto/sha256"
         "encoding/base64"
@@ -8,6 +9,7 @@ import (
         "fmt"
         "os"
         "strconv"
+        "strings"
         "time"
 
         "github.com/BurntSushi/toml"
@@ -125,7 +127,17 @@ func main() {
     api_key_secret := config.Secret
 
     request_method := "GET"
-    request_path := "/accounts"
+
+    reader := bufio.NewReader(os.Stdin)
+    fmt.Print(api_host + "/")
+    request_path, err := reader.ReadString('\n') 
+    if err != nil {
+        fmt.Println("ERROR reading input")
+        os.Exit(1)
+    }
+
+    request_path = "/" + request_path //append / to request_path
+    request_path = strings.TrimRight(request_path, "\r\n") //trim last chars from input
 
     rest_handler(api_host, api_key, api_key_password, api_key_secret, request_method, request_path)
 }
