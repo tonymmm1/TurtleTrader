@@ -31,7 +31,7 @@ type apiAccount struct { //array to store API account struct
     Trading_enabled bool `json:"trading_enabled"`
 }
 
-func gen_api_message(api_key_password string, api_key_secret string, time_current string, request_method string, request_path string) string{
+func gen_api_message(api_key_password string, api_key_secret string, time_current string, request_method string, request_path string) string {
     message := time_current + request_method + request_path //construct prehase message
 
     decoded_secret, err := base64.StdEncoding.DecodeString(api_key_secret) //decode base64 encoded api secret
@@ -46,13 +46,14 @@ func gen_api_message(api_key_password string, api_key_secret string, time_curren
     return base64.StdEncoding.EncodeToString(hash.Sum(nil)) //return hashed message
 }
 
-func rest_handler(api_host string, api_key string, api_key_password string, api_key_secret string, request_method string, request_path string){
+func rest_handler(api_host string, api_key string, api_key_password string, api_key_secret string, request_method string, request_path string) {
     time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
     message_hashed := gen_api_message(api_key_password, api_key_secret, time_current, request_method, request_path) //create hashed message to send
 
     //REST client
     client := resty.New() //create REST session
+    client.SetDebug(true)
     resp, err := client.R().
         SetHeader("Accept", "application/json"). 
         SetHeaders(map[string] string {
@@ -83,6 +84,7 @@ func rest_handler(api_host string, api_key string, api_key_password string, api_
     //store REST Body as struct
     var api_accounts []apiAccount
     if err := json.Unmarshal(resp.Body(), &api_accounts); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println(err)
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
