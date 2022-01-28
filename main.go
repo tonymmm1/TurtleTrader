@@ -98,7 +98,7 @@ func rest_client_delete() { //handles DELETE requests
 }
 */
 
-func get_all_accounts(api_host string, api_key string, api_key_password string, api_key_secret string) []apiAccount { //handles GET requests
+func get_all_accounts(api_host string, api_key string, api_key_password string, api_key_secret string) []apiAccount { //Get a list of trading accounts from the profile of the API key.
     request_path := "/accounts"
 
     var api_accounts []apiAccount
@@ -130,6 +130,12 @@ func get_all_accounts(api_host string, api_key string, api_key_password string, 
     }
 
     return api_accounts
+}
+
+func get_single_account(api_host string, api_key string, api_key_password string, api_key_secret string) { //Information for a single account.
+    //request_path := "/accounts/"
+
+    //api_accounts := get_all_accounts(api_host, api_key, api_key_password, api_key_secret) //store all API accounts into a struct
 }
 
 func rest_handler(api_host string, api_key string, api_key_password string, api_key_secret string) {
