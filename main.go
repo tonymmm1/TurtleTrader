@@ -31,7 +31,7 @@ type apiConfig struct { //configuration toml file struct
     Secret string
 }
 
-type apiAccount struct { //array to store API account struct
+type apiAccount struct { //struct to store API account 
     Id string `json:"id"`
     Currency string `json:"currency"`
     Balance string `json:"balance"`
@@ -41,7 +41,7 @@ type apiAccount struct { //array to store API account struct
     Trading_enabled bool `json:"trading_enabled"`
 }
 
-type apiLedger struct {
+type apiLedger struct { //struct to store API ledger
     Id string `json:"id"`
     Amount string `json:"amount"`
     Balance string `json:"balance"`
@@ -52,6 +52,33 @@ type apiLedger struct {
         Product_id string `json:"product_id"`
         Trade_id string `json:"trade_id"`
     } `json:"details"`
+}
+
+type apiHold struct { //struct to store API hold
+    Id string `json:"id"`
+    Created_at string `json:"created_at"`
+    Amount string `json:"amount"`
+    Ref string `json:"ref"`
+    Type string `json:"type"`
+}
+
+type apiTransfer struct { //struct to store API transfer
+    Id string `json:"id"`
+    Type string `json:"type"`
+    Created_at string `json:"created_at"`
+    Completed_at string `json:"completed_at"`
+    Canceled_at string `json:"canceled_at"`
+    Processed_at string `json:"processed_at"`
+    User_nonce string `json:"user_nonce"`
+    Amount string `json:"amount"`
+    Details struct {
+        Coinbase_payout_at string `json:"coinbase_payout_at"`
+        Coinbase_account_id string `json:"coinbase_account_id"`
+        Coinbase_deposit_id string `json:"coinbase_deposit_id"`
+        Coinbase_payment_method_id string `json:"coinbase_payment_method_id"`
+        Coinbase_payment_method_type string `json:"coinbase_payment_method_type"`
+    } `json:"details"`
+    Idem string `json:"idem"`
 }
 
 func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
@@ -101,6 +128,7 @@ func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { 
     if resp == nil {
         return resp.StatusCode(), nil
     }
+
     return resp.StatusCode(), resp.Body()
 }
 
@@ -133,8 +161,8 @@ func get_all_accounts(api_struct apiConfig) []apiAccount { //Get a list of tradi
 
     //debug
     fmt.Println("api_accounts:")
-    fmt.Println()
     for account := range api_accounts {
+        fmt.Println("api_accounts[", account, "]")
         fmt.Println(api_accounts[account].Id)
         fmt.Println(api_accounts[account].Currency)
         fmt.Println(api_accounts[account].Balance)
@@ -178,19 +206,38 @@ func get_single_account(api_struct apiConfig, api_account_id string) apiAccount 
     return api_account
 }
 
-func get_single_account_holds(api_struct apiConfig, api_account_id string) []byte { //List the holds of an account that belong to the same profile as the API key.
+func get_single_account_holds(api_struct apiConfig, api_account_id string) []apiHold { //List the holds of an account that belong to the same profile as the API key.
     request_path := "/accounts/" + api_account_id + "/holds" //?limit=100" //implement limit logic later
+
+    var api_account_holds []apiHold
 
     response_status, response_body := rest_client_get(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
-    if response_body != nil {
-        return response_body
+    if response_body == nil {
+        return nil
     }
 
-    return nil
+    if err := json.Unmarshal(response_body, &api_account_holds); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("api_account_holds:")
+    for hold := range api_account_holds {
+        fmt.Println("api_account_holds[", hold,"]")
+        fmt.Println(api_account_holds[hold].Id)
+        fmt.Println(api_account_holds[hold].Created_at)
+        fmt.Println(api_account_holds[hold].Amount)
+        fmt.Println(api_account_holds[hold].Ref)
+        fmt.Println(api_account_holds[hold].Type)
+        fmt.Println()
+    }
+
+    return api_account_holds
 }
 
 func get_single_account_ledgers(api_struct apiConfig, api_account_id string) []apiLedger { //List the holds of an account that belong to the same profile as the API key.
@@ -209,6 +256,7 @@ func get_single_account_ledgers(api_struct apiConfig, api_account_id string) []a
         os.Exit(1)
     }
 
+    //debug
     fmt.Println("account_id:", api_account_id)
     for ledger := range api_account_ledgers {
         fmt.Println(api_account_ledgers[ledger].Id)
@@ -216,7 +264,6 @@ func get_single_account_ledgers(api_struct apiConfig, api_account_id string) []a
         fmt.Println(api_account_ledgers[ledger].Balance)
         fmt.Println(api_account_ledgers[ledger].Created_at)
         fmt.Println(api_account_ledgers[ledger].Type)
-        //fmt.Println(api_account_ledgers[ledger].Details)
         fmt.Println(api_account_ledgers[ledger].Details.Order_id)
         fmt.Println(api_account_ledgers[ledger].Details.Product_id)
         fmt.Println(api_account_ledgers[ledger].Details.Trade_id)
@@ -224,6 +271,43 @@ func get_single_account_ledgers(api_struct apiConfig, api_account_id string) []a
     }
 
     return api_account_ledgers
+}
+
+func get_single_account_transfers(api_struct apiConfig, api_account_id string) []apiTransfer { //Lists past withdrawals and deposits for an account.
+    request_path := "/accounts/" + api_account_id + "/transfers" //?limit=100" //implement limit logic later
+
+    var api_account_transfers []apiTransfer
+
+    response_status, response_body := rest_client_get(api_struct, request_path)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+    if err := json.Unmarshal(response_body, &api_account_transfers); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("account_id:", api_account_id)
+    for transfer := range api_account_transfers {
+        fmt.Println(api_account_transfers[transfer].Id)
+        fmt.Println(api_account_transfers[transfer].Type)
+        fmt.Println(api_account_transfers[transfer].Created_at)
+        fmt.Println(api_account_transfers[transfer].Completed_at)
+        fmt.Println(api_account_transfers[transfer].Canceled_at)
+        fmt.Println(api_account_transfers[transfer].Processed_at)
+        fmt.Println(api_account_transfers[transfer].User_nonce)
+        fmt.Println(api_account_transfers[transfer].Amount)
+        fmt.Println(api_account_transfers[transfer].Details.Coinbase_payout_at)
+        fmt.Println(api_account_transfers[transfer].Details.Coinbase_account_id)
+        fmt.Println(api_account_transfers[transfer].Details.Coinbase_deposit_id)
+        fmt.Println(api_account_transfers[transfer].Details.Coinbase_payment_method_id)
+        fmt.Println(api_account_transfers[transfer].Details.Coinbase_payment_method_type)
+        fmt.Println(api_account_transfers[transfer].Idem)
+    }
+    
+    return api_account_transfers 
 }
 
 func rest_handler(api_struct apiConfig) {
