@@ -24,7 +24,7 @@ const (
     STATUS_CODE_INTERNAL_SERVER_ERROR = 500 //Internal Server Error -- We had a problem with our server
 )
 
-type tomlConfig struct { //configuration toml file struct
+type apiConfig struct { //configuration toml file struct
     Host string 
     Key string
     Password string
@@ -41,7 +41,7 @@ type apiAccount struct { //array to store API account struct
     Trading_enabled bool `json:"trading_enabled"`
 }
 
-func gen_api_message(api_key_password string, api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
+func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
     message := time_current + request_method + request_path //construct prehase message
 
     decoded_secret, err := base64.StdEncoding.DecodeString(api_key_secret) //decode base64 encoded api secret
@@ -56,23 +56,23 @@ func gen_api_message(api_key_password string, api_key_secret string, time_curren
     return base64.StdEncoding.EncodeToString(hash.Sum(nil)) //return hashed message
 }
 
-func rest_client_get(api_host string, api_key string, api_key_password string, api_key_secret string, request_path string) (int, []byte) { //handles GET requests
+func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { //handles GET requests
     request_method := "GET"
     time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message_hashed := gen_api_message(api_key_password, api_key_secret, time_current, request_method, request_path) //create hashed message to send
+    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_path) //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : api_key,
+            "CB-ACCESS-KEY" : api_struct.Key,
             "CB-ACCESS-SIGN" : message_hashed,
             "CB-ACCESS-TIMESTAMP" : time_current,
-            "CB-ACCESS-PASSPHRASE" : api_key_password,
+            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
             "Content-Type" : "application/json"}).
-        SetAuthToken(api_key).
-        Get(api_host + request_path)
+        SetAuthToken(api_struct.Key).
+        Get(api_struct.Host + request_path)
     // debug
     fmt.Println("Response Info:")
     fmt.Println("  Error      :", err)
@@ -98,12 +98,12 @@ func rest_client_delete() { //handles DELETE requests
 }
 */
 
-func get_all_accounts(api_host string, api_key string, api_key_password string, api_key_secret string) []apiAccount { //Get a list of trading accounts from the profile of the API key.
+func get_all_accounts(api_struct apiConfig) []apiAccount { //Get a list of trading accounts from the profile of the API key.
     request_path := "/accounts"
 
     var api_accounts []apiAccount
 
-    response_status, response_body := rest_client_get(api_host, api_key, api_key_password, api_key_secret, request_path)
+    response_status, response_body := rest_client_get(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
@@ -132,14 +132,14 @@ func get_all_accounts(api_host string, api_key string, api_key_password string, 
     return api_accounts
 }
 
-func get_single_account(api_host string, api_key string, api_key_password string, api_key_secret string) { //Information for a single account.
-    //request_path := "/accounts/"
+func get_single_account(api_struct apiConfig, api_account_id string) { //Information for a single account
+    //request_path := "/accounts/" + api_account_id
 
-    //api_accounts := get_all_accounts(api_host, api_key, api_key_password, api_key_secret) //store all API accounts into a struct
+    //api_accounts := get_all_accounts(api_host, api_key, api_key_password, api_struct.Secret) //store all API accounts into a struct
 }
 
-func rest_handler(api_host string, api_key string, api_key_password string, api_key_secret string) {
-    get_all_accounts(api_host, api_key, api_key_password, api_key_secret)
+func rest_handler(api_struct apiConfig) {
+    get_all_accounts(api_struct)
 }
 
 func main() {
@@ -149,17 +149,13 @@ func main() {
         os.Exit(1)
     }
 
-    var config tomlConfig
-    if _, err := toml.DecodeFile(f, &config); err != nil { //decode TOML file
+    var api_struct apiConfig
+    if _, err := toml.DecodeFile(f, &api_struct); err != nil { //decode TOML file
         fmt.Println("ERROR decoding toml configuration")
         os.Exit(1)
     }
-   
-    //store values from configuration file
-    api_host := config.Host
-    api_key := config.Key
-    api_key_password := config.Password
-    api_key_secret := config.Secret
 
-    rest_handler(api_host, api_key, api_key_password, api_key_secret)
+    //add check for missing config elements
+   
+    rest_handler(api_struct)
 }
