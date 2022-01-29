@@ -73,6 +73,11 @@ func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { 
             "Content-Type" : "application/json"}).
         SetAuthToken(api_struct.Key).
         Get(api_struct.Host + request_path)
+
+
+
+
+
     // debug
     fmt.Println("Response Info:")
     fmt.Println("  Error      :", err)
@@ -84,7 +89,11 @@ func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { 
     fmt.Println("  Body       :\n", resp)
     fmt.Println()
 
+    if resp == nil {
+        return resp.StatusCode(), nil
+    }
     return resp.StatusCode(), resp.Body()
+
 }
 
 /*
@@ -132,10 +141,49 @@ func get_all_accounts(api_struct apiConfig) []apiAccount { //Get a list of tradi
     return api_accounts
 }
 
-func get_single_account(api_struct apiConfig, api_account_id string) { //Information for a single account
-    //request_path := "/accounts/" + api_account_id
+func get_single_account(api_struct apiConfig, api_account_id string) apiAccount { //Information for a single account.
+    request_path := "/accounts/" + api_account_id
 
-    //api_accounts := get_all_accounts(api_host, api_key, api_key_password, api_struct.Secret) //store all API accounts into a struct
+    var api_account apiAccount //store single apiAccount
+
+    response_status, response_body := rest_client_get(api_struct, request_path)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &api_account); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("api_account:")
+    fmt.Println(api_account.Id)
+    fmt.Println(api_account.Currency)
+    fmt.Println(api_account.Balance)
+    fmt.Println(api_account.Hold)
+    fmt.Println(api_account.Available)
+    fmt.Println(api_account.Profile_id)
+    fmt.Println(api_account.Trading_enabled)
+    fmt.Println()
+
+    return api_account
+}
+
+func get_single_account_holds(api_struct apiConfig, api_account_id string) []byte { //List the holds of an account that belong to the same profile as the API key.
+    request_path := "/accounts/" + api_account_id + "/holds" //?limit=100" //implement limit logic later
+
+    response_status, response_body := rest_client_get(api_struct, request_path)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+    if response_body != nil {
+        return response_body
+    }
+
+    return nil
 }
 
 func rest_handler(api_struct apiConfig) {
