@@ -81,6 +81,65 @@ type apiTransfer struct { //struct to store API transfer
     Idem string `json:"idem"`
 }
 
+type apiWallet struct { //struct to store API wallet
+    Id string `json:"id"`
+    Name string `json:"name"`
+    Balance string `json:"balance"`
+    Currency string `json:"currency"`
+    Type string `json:"type"`
+    Primary bool `json:"primary"`
+    Active bool `json:"active"`
+    Available_on_consumer bool `json:"available_on_consumer"`
+    Ready bool `json:"ready"`
+    Wire_deposit_information struct {
+        Account_number string `json:"account_number"`
+        Routing_number string `json:"routing_number"`
+        Bank_name string `json:"bank_name"`
+        Bank_address string `json:"bank_address"`
+        Bank_country struct {
+            Code string `json:"code"`
+            Name string `json:"name"`
+        } `json:"bank_country"`
+        Account_name string `json:"account_name"`
+        Account_address string `json:"account_address"`
+        Reference string `json:"reference"`
+    } `json:"wire_deposit_information"`
+    Swift_deposit_information struct {
+        Account_number string `json:"account_number"`
+        Routing_number string `json:"routing_number"`
+        Bank_name string `json:"bank_name"`
+        Bank_address string `json:"bank_address"`
+        Bank_country struct {
+            Code string `json:"code"`
+            Name string `json:"name"`
+        } `json:"bank_country"`
+        Account_name string `json:"account_name"`
+        Account_address string `json:"account_address"`
+        Reference string `json:"reference"`
+    } `json:"swift_deposit_information"`
+    Sepa_deposit_information struct {
+        Iban string `json:"iban"`
+        Swift string `json:"swift"`
+        Bank_name string `json:"bank_name"`
+        Bank_address string `json:"bank_address"`
+        Bank_country_name string `json:"bank_country_name"`
+        Account_name string `json:"account_name"`
+        Account_address string `json:"account_address"`
+        Reference string `json:"reference"`
+    } `json:"sepa_deposit_information"`
+    Uk_deposit_information struct {
+        Sort_code string `json:"sort_code"`
+        Account_number string `json:"account_number"`
+        Bank_name string `json:"bank_name"`
+        Account_name string `json:"account_name"`
+        Reference string `json:"reference"`
+    } `json:"uk_deposit_information"`
+    Destination_tag_name string `json:"destination_tag_name"`
+    Destination_tag_regex string `json:"destination_tag_regex"`
+    Hold_balance string `json:"hold_balance"`
+    Hold_currency string `json:"hold_currency"`
+}
+
 func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
     message := time_current + request_method + request_path //construct prehase message
 
@@ -283,6 +342,7 @@ func get_single_account_transfers(api_struct apiConfig, api_account_id string) [
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
+
     if err := json.Unmarshal(response_body, &api_account_transfers); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
@@ -305,13 +365,98 @@ func get_single_account_transfers(api_struct apiConfig, api_account_id string) [
         fmt.Println(api_account_transfers[transfer].Details.Coinbase_payment_method_id)
         fmt.Println(api_account_transfers[transfer].Details.Coinbase_payment_method_type)
         fmt.Println(api_account_transfers[transfer].Idem)
+        fmt.Println()
     }
-    
+
     return api_account_transfers 
 }
 
+func get_all_wallets(api_struct apiConfig) []apiWallet { //Gets all the user's available Coinbase wallets
+    request_path := "/coinbase-accounts"
+
+    var api_accounts_wallets []apiWallet
+
+    response_status, response_body := rest_client_get(api_struct, request_path)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &api_accounts_wallets); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("account_id:", api_accounts_wallets)
+    for wallet := range api_accounts_wallets {
+        fmt.Println()
+        fmt.Println("api_accounts_wallets[", wallet, "]")
+        fmt.Println(api_accounts_wallets[wallet].Id)
+        fmt.Println(api_accounts_wallets[wallet].Name)
+        fmt.Println(api_accounts_wallets[wallet].Balance)
+        fmt.Println(api_accounts_wallets[wallet].Currency)
+        fmt.Println(api_accounts_wallets[wallet].Type)
+        fmt.Println(api_accounts_wallets[wallet].Primary)
+        fmt.Println(api_accounts_wallets[wallet].Active)
+        fmt.Println(api_accounts_wallets[wallet].Available_on_consumer)
+        if api_accounts_wallets[wallet].Ready == (true || false) {
+            fmt.Println(api_accounts_wallets[wallet].Ready)
+        }
+        if api_accounts_wallets[wallet].Wire_deposit_information.Account_name != "" {
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Account_number)
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Routing_number)
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Bank_name)
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Bank_address)
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Bank_country.Code)
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Bank_country.Name)
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Account_name)
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Account_address)
+            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Reference)
+        }
+        if api_accounts_wallets[wallet].Swift_deposit_information.Account_name != "" {
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Account_number)
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Routing_number)
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Bank_name)
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Bank_address)
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Bank_country.Code)
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Bank_country.Name)
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Account_name)
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Account_address)
+            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Reference)
+        }
+        if api_accounts_wallets[wallet].Sepa_deposit_information.Account_name != ""{
+            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Iban)
+            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Swift)
+            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Bank_name)
+            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Bank_address)
+            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Bank_country_name)
+            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Account_name)
+            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Account_address)
+            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Reference)
+        }
+        if api_accounts_wallets[wallet].Uk_deposit_information.Account_name != "" {
+            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Sort_code)
+            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Account_number)
+            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Bank_name)
+            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Account_name)
+            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Reference)
+        }
+        if api_accounts_wallets[wallet].Destination_tag_name != "" {
+            fmt.Println(api_accounts_wallets[wallet].Destination_tag_name)
+        }
+        if api_accounts_wallets[wallet].Destination_tag_regex != "" {
+            fmt.Println(api_accounts_wallets[wallet].Destination_tag_regex)
+        }
+        fmt.Println(api_accounts_wallets[wallet].Hold_balance)
+        fmt.Println(api_accounts_wallets[wallet].Hold_currency)
+    }
+    
+    return api_accounts_wallets
+}
+
 func rest_handler(api_struct apiConfig) {
-    get_all_accounts(api_struct)
+    get_all_wallets(api_struct)
 }
 
 func main() {
