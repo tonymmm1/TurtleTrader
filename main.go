@@ -41,6 +41,19 @@ type apiAccount struct { //array to store API account struct
     Trading_enabled bool `json:"trading_enabled"`
 }
 
+type apiLedger struct {
+    Id string `json:"id"`
+    Amount string `json:"amount"`
+    Balance string `json:"balance"`
+    Created_at string `json:"created_at"`
+    Type string `json:"type"`
+    Details struct {
+        Order_id string `json:"order_id"`
+        Product_id string `json:"product_id"`
+        Trade_id string `json:"trade_id"`
+    } `json:"details"`
+}
+
 func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
     message := time_current + request_method + request_path //construct prehase message
 
@@ -74,10 +87,6 @@ func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { 
         SetAuthToken(api_struct.Key).
         Get(api_struct.Host + request_path)
 
-
-
-
-
     // debug
     fmt.Println("Response Info:")
     fmt.Println("  Error      :", err)
@@ -93,7 +102,6 @@ func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { 
         return resp.StatusCode(), nil
     }
     return resp.StatusCode(), resp.Body()
-
 }
 
 /*
@@ -126,15 +134,14 @@ func get_all_accounts(api_struct apiConfig) []apiAccount { //Get a list of tradi
     //debug
     fmt.Println("api_accounts:")
     fmt.Println()
-    for api_account := range api_accounts {
-        fmt.Printf("api_accounts[%d]:\n", api_account)
-        fmt.Println(api_accounts[api_account].Id)
-        fmt.Println(api_accounts[api_account].Currency)
-        fmt.Println(api_accounts[api_account].Balance)
-        fmt.Println(api_accounts[api_account].Hold)
-        fmt.Println(api_accounts[api_account].Available)
-        fmt.Println(api_accounts[api_account].Profile_id)
-        fmt.Println(api_accounts[api_account].Trading_enabled)
+    for account := range api_accounts {
+        fmt.Println(api_accounts[account].Id)
+        fmt.Println(api_accounts[account].Currency)
+        fmt.Println(api_accounts[account].Balance)
+        fmt.Println(api_accounts[account].Hold)
+        fmt.Println(api_accounts[account].Available)
+        fmt.Println(api_accounts[account].Profile_id)
+        fmt.Println(api_accounts[account].Trading_enabled)
         fmt.Println()
     }
 
@@ -184,6 +191,39 @@ func get_single_account_holds(api_struct apiConfig, api_account_id string) []byt
     }
 
     return nil
+}
+
+func get_single_account_ledger(api_struct apiConfig, api_account_id string) []byte { //List the holds of an account that belong to the same profile as the API key.
+    request_path := "/accounts/" + api_account_id + "/ledger" //?limit=100" //implement limit logic later
+
+    var api_account_ledgers []apiLedger
+
+    response_status, response_body := rest_client_get(api_struct, request_path)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &api_account_ledgers); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    fmt.Println("account_id:", api_account_id)
+    for ledger := range api_account_ledgers {
+        fmt.Println(api_account_ledgers[ledger].Id)
+        fmt.Println(api_account_ledgers[ledger].Amount)
+        fmt.Println(api_account_ledgers[ledger].Balance)
+        fmt.Println(api_account_ledgers[ledger].Created_at)
+        fmt.Println(api_account_ledgers[ledger].Type)
+        //fmt.Println(api_account_ledgers[ledger].Details)
+        fmt.Println(api_account_ledgers[ledger].Details.Order_id)
+        fmt.Println(api_account_ledgers[ledger].Details.Product_id)
+        fmt.Println(api_account_ledgers[ledger].Details.Trade_id)
+        fmt.Println()
+    }
+
+    return response_body
 }
 
 func rest_handler(api_struct apiConfig) {
