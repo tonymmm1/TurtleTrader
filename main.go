@@ -25,7 +25,7 @@ const (
 )
 
 type apiConfig struct { //configuration toml file struct
-    Host string 
+    Host string
     Key string
     Password string
     Secret string
@@ -193,7 +193,7 @@ func get_single_account_holds(api_struct apiConfig, api_account_id string) []byt
     return nil
 }
 
-func get_single_account_ledger(api_struct apiConfig, api_account_id string) []apiLedger { //List the holds of an account that belong to the same profile as the API key.
+func get_single_account_ledgers(api_struct apiConfig, api_account_id string) []apiLedger { //List the holds of an account that belong to the same profile as the API key.
     request_path := "/accounts/" + api_account_id + "/ledger" //?limit=100" //implement limit logic later
 
     var api_account_ledgers []apiLedger
