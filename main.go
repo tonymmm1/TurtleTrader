@@ -140,6 +140,31 @@ type apiWallet struct { //struct to store API wallet
     Hold_currency string `json:"hold_currency"`
 }
 
+type apiCryptoAddress struct { //struct to store API generated crypto address
+    Id string `json:"id"`
+    Address string `json:"address"`
+    Address_info struct {
+        Address string `json:"address"`
+        Destination_tag string `json:"destination_tag"`
+    } `json:"address_info"`
+    Name string `json:"name"`
+    Created_at string `json:"created_at"`
+    Updated_at string `json:"updated_at"`
+    Network string `json:"network"`
+    Uri_scheme string `json:"uri_scheme"`
+    Resource string `json:"resource"`
+    Resource_path string `json:"resource_path"`
+    Warnings []struct {
+        Title string `json:"title"`
+        Details string `json:"details"`
+        Image_url string `json:"image_url"`
+    } `json:"warnings"`
+    Legacy_address string `json:"legacy_address"`
+    Destination_tag string `json:"destination_tag"`
+    Deposit_uri string `json:"deposity_uri"`
+    Callback_url string `json:"callback_url"`
+}
+
 func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
     message := time_current + request_method + request_path //construct prehase message
 
@@ -191,11 +216,43 @@ func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { 
     return resp.StatusCode(), resp.Body()
 }
 
+func rest_client_post(api_struct apiConfig, request_path string) (int, []byte) { //handles POST requests
+    request_method := "POST"
+    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
+
+    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_path) //create hashed message to send
+
+    client := resty.New() //create REST session
+    resp, err := client.R().
+        SetHeader("Accept", "application/json").
+        SetHeaders(map[string] string {
+            "CB-ACCESS-KEY" : api_struct.Key,
+            "CB-ACCESS-SIGN" : message_hashed,
+            "CB-ACCESS-TIMESTAMP" : time_current,
+            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "Content-Type" : "application/json"}).
+        SetAuthToken(api_struct.Key).
+        Post(api_struct.Host + request_path)
+
+    // debug
+    fmt.Println("Response Info:")
+    fmt.Println("  Error      :", err)
+    fmt.Println("  Status Code:", resp.StatusCode())
+    fmt.Println("  Status     :", resp.Status())
+    fmt.Println("  Proto      :", resp.Proto())
+    fmt.Println("  Time       :", resp.Time())
+    fmt.Println("  Received At:", resp.ReceivedAt())
+    fmt.Println("  Body       :\n", resp)
+    fmt.Println()
+
+    if resp == nil {
+        return resp.StatusCode(), nil
+    }
+
+    return resp.StatusCode(), resp.Body()
+}
 /*
 func rest_client_put() { //handles PUT requests
-}
-
-func rest_client_post() { //handles POST requests
 }
 
 func rest_client_delete() { //handles DELETE requests
@@ -220,6 +277,7 @@ func get_all_accounts(api_struct apiConfig) []apiAccount { //Get a list of tradi
 
     //debug
     fmt.Println("api_accounts:")
+    fmt.Println()
     for account := range api_accounts {
         fmt.Println("api_accounts[", account, "]")
         fmt.Println(api_accounts[account].Id)
@@ -388,7 +446,8 @@ func get_all_wallets(api_struct apiConfig) []apiWallet { //Gets all the user's a
     }
 
     //debug
-    fmt.Println("account_id:", api_accounts_wallets)
+    fmt.Println("api_account_wallets: ", api_accounts_wallets)
+    fmt.Println()
     for wallet := range api_accounts_wallets {
         fmt.Println()
         fmt.Println("api_accounts_wallets[", wallet, "]")
@@ -451,12 +510,75 @@ func get_all_wallets(api_struct apiConfig) []apiWallet { //Gets all the user's a
         fmt.Println(api_accounts_wallets[wallet].Hold_balance)
         fmt.Println(api_accounts_wallets[wallet].Hold_currency)
     }
+    fmt.Println()
     
     return api_accounts_wallets
 }
 
+func gen_crypto_address(api_struct apiConfig, api_account_id string) apiCryptoAddress {
+    request_path := "/coinbase-accounts/" + api_account_id + "/addresses"
+
+    var api_account_address apiCryptoAddress
+
+    response_status, response_body := rest_client_post(api_struct, request_path)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &api_account_address); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("api_account_address:", api_account_id)
+    fmt.Println()
+    fmt.Println(api_account_address.Id)
+    fmt.Println(api_account_address.Address)
+    if api_account_address.Address_info.Address != "" {
+        fmt.Println(api_account_address.Address_info.Address)
+        fmt.Println(api_account_address.Address_info.Destination_tag)
+    }
+    fmt.Println(api_account_address.Name)
+    fmt.Println(api_account_address.Created_at)
+    fmt.Println(api_account_address.Updated_at)
+    if api_account_address.Network != "" {
+        fmt.Println(api_account_address.Network)
+    }
+    if api_account_address.Uri_scheme != "" {
+        fmt.Println(api_account_address.Uri_scheme)
+    }
+    fmt.Println(api_account_address.Resource)
+    fmt.Println(api_account_address.Resource_path)
+    if api_account_address.Warnings != nil {
+        for warning := range api_account_address.Warnings {
+            fmt.Println()
+            fmt.Println("api_account_address.Warnings[", warning, "]")
+            fmt.Println(api_account_address.Warnings[warning].Title)
+            fmt.Println(api_account_address.Warnings[warning].Details)
+            fmt.Println(api_account_address.Warnings[warning].Image_url)
+        }
+    }
+    if api_account_address.Legacy_address != "" {
+        fmt.Println(api_account_address.Legacy_address)
+    }
+    if api_account_address.Destination_tag != "" {
+        fmt.Println(api_account_address.Destination_tag)
+    }
+    if api_account_address.Deposit_uri != "" {
+        fmt.Println(api_account_address.Deposit_uri)
+    }
+    if api_account_address.Callback_url != "" {
+        fmt.Println(api_account_address.Callback_url)
+    }
+    fmt.Println()
+
+    return api_account_address
+}
+
 func rest_handler(api_struct apiConfig) {
-    get_all_wallets(api_struct)
+    get_all_accounts(api_struct)
 }
 
 func main() {
