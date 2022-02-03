@@ -14,14 +14,27 @@ import (
         "github.com/go-resty/resty/v2"
 )
 
-//Common return codes (https://docs.cloud.coinbase.com/exchange/docs/requests)
-const (
+const ( //Common return codes (https://docs.cloud.coinbase.com/exchange/docs/requests)
     STATUS_CODE_SUCCESS int = 200           //Success
     STATUS_CODE_BAD_REQUEST = 400           //Bad Request -- Invalid request format
     STATUS_CODE_UNAUTHORIZED = 401          //Unauthorized -- Invalid API Key
     STATUS_CODE_FORBIDDEN = 403             //Forbidden -- You do not have access to the requested resource
     STATUS_CODE_NOT_FOUND = 404             //Not Found
     STATUS_CODE_INTERNAL_SERVER_ERROR = 500 //Internal Server Error -- We had a problem with our server
+)
+
+const ( //POST request types
+    POST_REQUEST_GENERATE_ADDRESS = 1
+    POST_REQUEST_CONVERT_CURRENCY = 2
+    POST_REQUEST_CREATE_ORDER = 3
+    POST_REQUEST_DEPOSIT_FROM_COINBASE = 4
+    POST_REQUEST_DEPOSIT_FROM_PAYMENT = 5
+    POST_REQUEST_WITHDRAW_TO_COINBASE = 6
+    POST_REQUEST_WITHDRAW_TO_CRYPTO = 7
+    POST_REQUEST_WITHDRAW_TO_PAYMENT = 8
+    POST_REQUEST_CREATE_PROFILE = 9
+    POST_REQUEST_TRANSFER_FUNDS_TO_PROFILE = 10
+    POST_REQUEST_CREATE_REPORT = 11
 )
 
 type apiConfig struct { //configuration toml file struct
@@ -62,7 +75,7 @@ type apiHold struct { //struct to store API hold
     Type string `json:"type"`
 }
 
-type apiTransfer struct { //struct to store API transfer
+type apiPastTransfer struct { //struct to store API past transfer
     Id string `json:"id"`
     Type string `json:"type"`
     Created_at string `json:"created_at"`
@@ -165,6 +178,48 @@ type apiCryptoAddress struct { //struct to store API generated crypto address
     Callback_url string `json:"callback_url"`
 }
 
+type reqConvert struct {
+    Request_path string
+    Profile_id string
+    From string
+    To string
+    Amount string
+    Nonce string
+}
+
+type apiConvert struct { //struct to store API conversion
+    Id string `json:"id"`
+    Amount string `json:"amount"`
+    From_account_id string `json:"from_account_id"`
+    To_account_id string `json:"to_account_id"`
+    From string `json:"from"`
+    To string `json:"to"`
+}
+
+type reqTransfer struct {
+    Request_path string
+    Profile_id string
+    Amount string
+    Payment_method_id string
+    Coinbase_account_id string
+    Currency string
+    Crypto_address string   //crypto address
+    Destination_tag string  //crypto address
+    No_destination_tag bool //crypto address
+    Two_factor_code string  //crypto address
+    Nonce int32 //unique value //crypto address
+    Fee string  //set with post_get_fee_estimate //crypto address
+}
+
+type apiTransfer struct {
+    Id string `json:"id"`
+    Amount string `json:"amount"`
+    Currency string `json:"currency"`
+    Payout_at string `json:"payout_at"`
+    Fee string `json:"fee"`
+    Subtotal string `json:"subtotal"`
+}
+
 func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
     message := time_current + request_method + request_path //construct prehase message
 
@@ -180,8 +235,9 @@ func gen_api_message(api_key_secret string, time_current string, request_method 
     return base64.StdEncoding.EncodeToString(hash.Sum(nil)) //return hashed message
 }
 
-func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { //handles GET requests
+func rest_get(api_struct apiConfig, request_path string) (int, []byte) { //handles GET requests
     request_method := "GET"
+
     time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
     message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_path) //create hashed message to send
@@ -209,20 +265,18 @@ func rest_client_get(api_struct apiConfig, request_path string) (int, []byte) { 
     fmt.Println("  Body       :\n", resp)
     fmt.Println()
 
-    if resp == nil {
-        return resp.StatusCode(), nil
-    }
-
     return resp.StatusCode(), resp.Body()
 }
 
-func rest_client_post(api_struct apiConfig, request_path string) (int, []byte) { //handles POST requests
+func rest_post_generate_address(api_struct apiConfig, request_path string) (int, []byte) { //POST_REQUEST_GENERATE_ADDRESS
     request_method := "POST"
+
     time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
     message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_path) //create hashed message to send
 
     client := resty.New() //create REST session
+
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
@@ -244,27 +298,133 @@ func rest_client_post(api_struct apiConfig, request_path string) (int, []byte) {
     fmt.Println("  Received At:", resp.ReceivedAt())
     fmt.Println("  Body       :\n", resp)
     fmt.Println()
+    
+    return resp.StatusCode(), resp.Body()
+}
 
-    if resp == nil {
-        return resp.StatusCode(), nil
-    }
+func rest_post_convert_currency(api_struct apiConfig, request_struct reqConvert) (int, []byte) { //POST_REQUEST_CONVERT_CURRENCY
+    request_method := "POST"
+
+    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
+
+    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_struct.Request_path) //create hashed message to send
+
+    client := resty.New() //create REST session
+
+    resp, err := client.R().
+        SetHeader("Accept", "application/json").
+        SetHeaders(map[string] string {
+            "CB-ACCESS-KEY" : api_struct.Key,
+            "CB-ACCESS-SIGN" : message_hashed,
+            "CB-ACCESS-TIMESTAMP" : time_current,
+            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "Content-Type" : "application/json"}).
+        SetBody(map[string] string {
+            "profile_id" : request_struct.Profile_id,
+            "from" : request_struct.From,
+            "to" : request_struct.To,
+            "amount" : request_struct.Amount,
+            "nonce" : request_struct.Nonce}).
+        SetAuthToken(api_struct.Key).
+        Post(api_struct.Host + request_struct.Request_path)
+
+    // debug
+    fmt.Println("Response Info:")
+    fmt.Println("  Error      :", err)
+    fmt.Println("  Status Code:", resp.StatusCode())
+    fmt.Println("  Status     :", resp.Status())
+    fmt.Println("  Proto      :", resp.Proto())
+    fmt.Println("  Time       :", resp.Time())
+    fmt.Println("  Received At:", resp.ReceivedAt())
+    fmt.Println("  Body       :\n", resp)
+    fmt.Println()
 
     return resp.StatusCode(), resp.Body()
 }
-/*
-func rest_client_put() { //handles PUT requests
+func rest_post_transfer_payment(api_struct apiConfig, request_struct reqTransfer) (int, []byte) { //POST_REQUEST_(WITHDRAW/DEPOSIT)_PAYMENT
+    request_method := "POST"
+
+    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
+
+    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_struct.Request_path) //create hashed message to send
+
+    client := resty.New() //create REST session
+
+    resp, err := client.R().
+        SetHeader("Accept", "application/json").
+        SetHeaders(map[string] string {
+            "CB-ACCESS-KEY" : api_struct.Key,
+            "CB-ACCESS-SIGN" : message_hashed,
+            "CB-ACCESS-TIMESTAMP" : time_current,
+            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "Content-Type" : "application/json"}).
+        SetBody(map[string] string {
+            "profile_id" : request_struct.Profile_id,
+            "amount" : request_struct.Amount,
+            "payment_method_id" : request_struct.Payment_method_id,
+            "currency" : request_struct.Amount}).
+        SetAuthToken(api_struct.Key).
+        Post(api_struct.Host + request_struct.Request_path)
+
+    // debug
+    fmt.Println("Response Info:")
+    fmt.Println("  Error      :", err)
+    fmt.Println("  Status Code:", resp.StatusCode())
+    fmt.Println("  Status     :", resp.Status())
+    fmt.Println("  Proto      :", resp.Proto())
+    fmt.Println("  Time       :", resp.Time())
+    fmt.Println("  Received At:", resp.ReceivedAt())
+    fmt.Println("  Body       :\n", resp)
+    fmt.Println()
+
+    return resp.StatusCode(), resp.Body()
 }
 
-func rest_client_delete() { //handles DELETE requests
+func rest_post_transfer_coinbase(api_struct apiConfig, request_struct reqTransfer) (int, []byte) { //POST_REQUEST_WITHDRAW/DEPOSIT
+    request_method := "POST"
+
+    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
+
+    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_struct.Request_path) //create hashed message to send
+
+    client := resty.New() //create REST session
+
+    resp, err := client.R().
+        SetHeader("Accept", "application/json").
+        SetHeaders(map[string] string {
+            "CB-ACCESS-KEY" : api_struct.Key,
+            "CB-ACCESS-SIGN" : message_hashed,
+            "CB-ACCESS-TIMESTAMP" : time_current,
+            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "Content-Type" : "application/json"}).
+        SetBody(map[string] string {
+            "profile_id" : request_struct.Profile_id,
+            "amount" : request_struct.Amount,
+            "coinbase_account_id" : request_struct.Coinbase_account_id,
+            "currency" : request_struct.Amount}).
+        SetAuthToken(api_struct.Key).
+        Post(api_struct.Host + request_struct.Request_path)
+
+    // debug
+    fmt.Println("Response Info:")
+    fmt.Println("  Error      :", err)
+    fmt.Println("  Status Code:", resp.StatusCode())
+    fmt.Println("  Status     :", resp.Status())
+    fmt.Println("  Proto      :", resp.Proto())
+    fmt.Println("  Time       :", resp.Time())
+    fmt.Println("  Received At:", resp.ReceivedAt())
+    fmt.Println("  Body       :\n", resp)
+    fmt.Println()
+
+    return resp.StatusCode(), resp.Body()
 }
-*/
 
 func get_all_accounts(api_struct apiConfig) []apiAccount { //Get a list of trading accounts from the profile of the API key.
     request_path := "/accounts"
 
     var api_accounts []apiAccount
 
-    response_status, response_body := rest_client_get(api_struct, request_path)
+    response_status, response_body := rest_get(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
@@ -298,7 +458,7 @@ func get_single_account(api_struct apiConfig, api_account_id string) apiAccount 
 
     var api_account apiAccount //store single apiAccount
 
-    response_status, response_body := rest_client_get(api_struct, request_path)
+    response_status, response_body := rest_get(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
@@ -328,7 +488,7 @@ func get_single_account_holds(api_struct apiConfig, api_account_id string) []api
 
     var api_account_holds []apiHold
 
-    response_status, response_body := rest_client_get(api_struct, request_path)
+    response_status, response_body := rest_get(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
@@ -362,7 +522,7 @@ func get_single_account_ledgers(api_struct apiConfig, api_account_id string) []a
 
     var api_account_ledgers []apiLedger
 
-    response_status, response_body := rest_client_get(api_struct, request_path)
+    response_status, response_body := rest_get(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
@@ -390,12 +550,12 @@ func get_single_account_ledgers(api_struct apiConfig, api_account_id string) []a
     return api_account_ledgers
 }
 
-func get_single_account_transfers(api_struct apiConfig, api_account_id string) []apiTransfer { //Lists past withdrawals and deposits for an account.
+func get_single_account_transfers(api_struct apiConfig, api_account_id string) []apiPastTransfer { //Lists past withdrawals and deposits for an account.
     request_path := "/accounts/" + api_account_id + "/transfers" //?limit=100" //implement limit logic later
 
-    var api_account_transfers []apiTransfer
+    var api_account_transfers []apiPastTransfer
 
-    response_status, response_body := rest_client_get(api_struct, request_path)
+    response_status, response_body := rest_get(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
@@ -434,7 +594,7 @@ func get_all_wallets(api_struct apiConfig) []apiWallet { //Gets all the user's a
 
     var api_accounts_wallets []apiWallet
 
-    response_status, response_body := rest_client_get(api_struct, request_path)
+    response_status, response_body := rest_get(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
@@ -515,12 +675,12 @@ func get_all_wallets(api_struct apiConfig) []apiWallet { //Gets all the user's a
     return api_accounts_wallets
 }
 
-func gen_crypto_address(api_struct apiConfig, api_account_id string) apiCryptoAddress {
+func generate_crypto_address(api_struct apiConfig, api_account_id string) apiCryptoAddress { //Generates a one-time crypto address for depositing crypto.
     request_path := "/coinbase-accounts/" + api_account_id + "/addresses"
 
     var api_account_address apiCryptoAddress
 
-    response_status, response_body := rest_client_post(api_struct, request_path)
+    response_status, response_body := rest_post_generate_address(api_struct, request_path)
     if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
@@ -577,6 +737,58 @@ func gen_crypto_address(api_struct apiConfig, api_account_id string) apiCryptoAd
     return api_account_address
 }
 
+func convert_currency(api_struct apiConfig, request_profile_id string, request_from string, request_to string, request_amount string) apiConvert { //Converts funs from currency to currency
+    request_path := "/conversions"
+
+    var request_struct reqConvert
+    var api_account_convert apiConvert
+
+    request_struct.Request_path = request_path
+    request_struct.Profile_id = request_profile_id
+    request_struct.From = request_from
+    request_struct.To = request_to
+    request_struct.Amount = request_amount
+
+    response_status, response_body := rest_post_convert_currency(api_struct, request_struct)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &api_account_convert); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    return api_account_convert
+}
+
+func deposit_coinbase_account(api_struct apiConfig, request_profile_id string, request_amount string, request_coinbase_account_id string, request_currency string) apiTransfer {
+    request_path := "/deposits/coinbase-account"
+
+    var request_struct reqTransfer
+    var api_account_deposit apiTransfer
+
+    request_struct.Request_path = request_path
+    request_struct.Profile_id = request_profile_id
+    request_struct.Amount = request_amount
+    request_struct.Coinbase_account_id = request_coinbase_account_id
+    request_struct.Currency = request_currency
+
+    response_status, response_body := rest_post_transfer_coinbase(api_struct, request_struct)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &api_account_deposit); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    return api_account_deposit
+}
+
 func rest_handler(api_struct apiConfig) {
     get_all_accounts(api_struct)
 }
@@ -588,7 +800,7 @@ func main() {
         os.Exit(1)
     }
 
-    var api_struct apiConfig
+    var api_struct apiConfig //struct that stores API key information
     if _, err := toml.DecodeFile(f, &api_struct); err != nil { //decode TOML file
         fmt.Println("ERROR decoding toml configuration")
         os.Exit(1)
@@ -596,5 +808,5 @@ func main() {
 
     //add check for missing config elements
    
-    rest_handler(api_struct)
+    rest_handler(api_struct) //rest handle function
 }
