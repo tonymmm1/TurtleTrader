@@ -211,6 +211,12 @@ type reqTransfer struct {
     Fee string  //set with post_get_fee_estimate //crypto address
 }
 
+type apiFee struct {
+    Taker_fee_rate string `json:"taker_fee_rate"`
+    Maker_fee_rate string `json:"maker_fee_rate"`
+    Usd_volume string `json:"usd_volume"`
+}
+
 type apiTransfer struct {
     Id string `json:"id"`
     Amount string `json:"amount"`
@@ -787,6 +793,32 @@ func deposit_coinbase_account(api_struct apiConfig, request_profile_id string, r
     }
 
     return api_account_deposit
+}
+
+func get_fees(api_struct apiConfig) apiFee {
+    request_path := "/fees"
+
+    var api_account_fees apiFee
+
+    response_status, response_body := rest_get(api_struct, request_path)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &api_account_fees); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("api_account_fees:")
+    fmt.Println(api_account_fees.Taker_fee_rate)
+    fmt.Println(api_account_fees.Maker_fee_rate)
+    fmt.Println(api_account_fees.Usd_volume)
+    fmt.Println()
+
+    return api_account_fees
 }
 
 func rest_handler(api_struct apiConfig) {
