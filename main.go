@@ -262,6 +262,13 @@ type apiProfile struct {
     Created_at string `json:"created_at"`
 }
 
+type apiPrice struct {
+    Timestamp string `json:"timestamp"`
+    Messages []string `json:"messages"`
+    Signatures []string `json:"signatures"`
+    Prices map[string] interface {} `json:"prices"`
+}
+
 func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
     message := time_current + request_method + request_path //construct prehase message
 
@@ -1000,6 +1007,46 @@ func get_profiles(api_struct apiConfig, active bool) []apiProfile{
     fmt.Println()
 
     return profiles
+}
+
+func get_signed_prices(api_struct apiConfig) apiPrice {
+    request_path := "/oracle"
+
+    var prices apiPrice
+
+    response_status, response_body := rest_get(api_struct, request_path)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &prices); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("api_account_prices:")
+    fmt.Println()
+    fmt.Println(prices.Timestamp)
+    for message := range prices.Messages {
+        fmt.Println("prices.Messages[", message, "]")
+        fmt.Println(prices.Messages[message])
+        fmt.Println()
+    }
+    fmt.Println()
+    for signature := range prices.Signatures {
+        fmt.Println("price.Signatures[", signature, "]")
+        fmt.Println(prices.Signatures[signature])
+        fmt.Println()
+    }
+    fmt.Println()
+    for k, v := range prices.Prices {
+        fmt.Println(k, ":", v)
+    }
+    fmt.Println()
+
+    return prices
 }
 
 func rest_handler(api_struct apiConfig) {
