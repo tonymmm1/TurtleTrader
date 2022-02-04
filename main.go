@@ -44,7 +44,7 @@ type apiConfig struct { //configuration toml file struct
     Secret string
 }
 
-type apiAccount struct { //struct to store API account 
+type apiAccount struct { //struct to store API account
     Id string `json:"id"`
     Currency string `json:"currency"`
     Balance string `json:"balance"`
@@ -1051,6 +1051,7 @@ func get_signed_prices(api_struct apiConfig) apiPrice {
 
 func rest_handler(api_struct apiConfig) {
     get_all_accounts(api_struct)
+    get_signed_prices(api_struct)
 }
 
 func main() {
