@@ -546,10 +546,47 @@ func cbp_convert_currency(profile_id string, from string, to string, amount stri
         os.Exit(1)
     }
 
+    //debug
+    fmt.Println("Convert currency")
+    fmt.Println(convert.Id)
+    fmt.Println(convert.Amount)
+    fmt.Println(convert.From_account_id)
+    fmt.Println(convert.To_account_id)
+    fmt.Println(convert.From)
+    fmt.Println(convert.To)
+
     return convert
 }
 
-func cbp_deposit_coinbase_account(profile_id string, amount string, account_id string, currency string) cbpTransfer {
+func cbp_get_conversion(conversion_id string, profile_id string) cbpConvert{
+    path := "/conversion/" + conversion_id
+
+    var convert cbpConvert
+
+    response_status, response_body := cbp_rest_get_convert(path, profile_id)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &convert); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get a conversion")
+    fmt.Println(convert.Id)
+    fmt.Println(convert.Amount)
+    fmt.Println(convert.From_account_id)
+    fmt.Println(convert.To_account_id)
+    fmt.Println(convert.From)
+    fmt.Println(convert.To)
+
+    return convert
+}
+
+func cbp_transfer_coinbase_account(profile_id string, amount string, account_id string, currency string) cbpTransfer {
     path := "/deposits/coinbase-account"
 
     var deposit cbpTransfer
@@ -564,6 +601,15 @@ func cbp_deposit_coinbase_account(profile_id string, amount string, account_id s
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
+
+    //debug
+    fmt.Println("Deposit/Withdraw to/from Coinbase account")
+    fmt.Println(deposit.Id)
+    fmt.Println(deposit.Amount)
+    fmt.Println(deposit.Currency)
+    fmt.Println(deposit.Payout_at)
+    fmt.Println(deposit.Fee)
+    fmt.Println(deposit.Subtotal)
 
     return deposit
 }
