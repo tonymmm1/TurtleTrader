@@ -182,7 +182,7 @@ type cbpTransfer struct { //Withdraw/deposit to/from Coinbase/payment
     Subtotal string `json:"subtotal"`
 }
 
-type cbpFill struct {
+type cbpFill struct { //Get all fills
     Trade_id int32 `json:"id"`
     Product_id string `json:"product_id"`
     Order_id string `json:"order_id"`
@@ -198,7 +198,7 @@ type cbpFill struct {
     Usd_volume string `json:"usd_volume"`
 }
 
-type cbpProfile struct {
+type cbpProfile struct { //Get profiles/Create a profile/Get profile by id/Get profile by id
     Id string `json:"id"`
     User_id string `json:"user_id"`
     Name string `json:"name"`
@@ -208,7 +208,7 @@ type cbpProfile struct {
     Created_at string `json:"created_at"`
 }
 
-type cbpPrice struct {
+type cbpPrice struct { //Get signed prices
     Timestamp string `json:"timestamp"`
     Messages []string `json:"messages"`
     Signatures []string `json:"signatures"`
