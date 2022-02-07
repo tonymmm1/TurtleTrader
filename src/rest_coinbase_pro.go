@@ -12,39 +12,37 @@ import (
         "github.com/go-resty/resty/v2"
 )
 
-func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
-    message := time_current + request_method + request_path //construct prehase message
+func cbp_generate_message(time string, method string, path string) string { //generate hashed message for REST requests
+    message := time + method + path //construct prehase message
 
-    decoded_secret, err := base64.StdEncoding.DecodeString(api_key_secret) //decode base64 encoded api secret
+    decoded, err := base64.StdEncoding.DecodeString(cbpKey.Secret) //decode base64 encoded api secret
     if err != nil {
         fmt.Println("ERROR decoding api key secret")
         os.Exit(1)
     }
 
-    hash := hmac.New(sha256.New, []byte(decoded_secret)) //generate new SHA256 hmac based on decoded api secret
+    hash := hmac.New(sha256.New, []byte(decoded)) //generate new SHA256 hmac based on decoded api secret
     hash.Write([]byte(message)) //hash message using hmac
 
     return base64.StdEncoding.EncodeToString(hash.Sum(nil)) //return hashed message
 }
 
-func rest_get(api_struct apiConfig, request_path string) (int, []byte) { //handles GET requests
-    request_method := "GET"
+func cbp_rest_get(path string) (int, []byte) { //handles GET requests
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
-
-    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_path) //create hashed message to send
+    message := cbp_generate_message(time, "GET", path) //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : api_struct.Key,
-            "CB-ACCESS-SIGN" : message_hashed,
-            "CB-ACCESS-TIMESTAMP" : time_current,
-            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
             "Content-Type" : "application/json"}).
-        SetAuthToken(api_struct.Key).
-        Get(api_struct.Host + request_path)
+        SetAuthToken(cbpKey.Key).
+        Get(cbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -60,31 +58,29 @@ func rest_get(api_struct apiConfig, request_path string) (int, []byte) { //handl
     return resp.StatusCode(), resp.Body()
 }
 
-func rest_get_all_fills(api_struct apiConfig, request_struct reqFill) (int, []byte) { //handles GET requests
-    request_method := "GET"
+func cbp_rest_get_fills(path string, order_id string, product_id string, profile_id string, limit int64, before int64, after int64) (int, []byte) { //handles GET requests
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
-
-    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_struct.Request_path) //create hashed message to send
+    message := cbp_generate_message(time, "GET", path) //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : api_struct.Key,
-            "CB-ACCESS-SIGN" : message_hashed,
-            "CB-ACCESS-TIMESTAMP" : time_current,
-            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
-            "order_id" : request_struct.Order_id,
-            "product_id" : request_struct.Product_id,
-            "profile_id" : request_struct.Profile_id,
-            "limit" : strconv.FormatInt(request_struct.Limit, 10),
-            "before" : strconv.FormatInt(request_struct.Before, 10),
-            "after" : strconv.FormatInt(request_struct.After, 10)}).
-        SetAuthToken(api_struct.Key).
-        Get(api_struct.Host + request_struct.Request_path)
+            "order_id" : order_id,
+            "product_id" : product_id,
+            "profile_id" : profile_id,
+            "limit" : strconv.FormatInt(limit, 10),
+            "before" : strconv.FormatInt(before, 10),
+            "after" : strconv.FormatInt(after, 10)}).
+        SetAuthToken(cbpKey.Key).
+        Get(cbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -100,26 +96,24 @@ func rest_get_all_fills(api_struct apiConfig, request_struct reqFill) (int, []by
     return resp.StatusCode(), resp.Body()
 }
 
-func rest_get_profiles(api_struct apiConfig, request_path string, active bool) (int, []byte) {
-    request_method := "GET"
+func cbp_rest_get_profiles(path string, active bool) (int, []byte) {
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
-
-    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_path) //create hashed message to send
+    message := cbp_generate_message(time, "GET", path) //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : api_struct.Key,
-            "CB-ACCESS-SIGN" : message_hashed,
-            "CB-ACCESS-TIMESTAMP" : time_current,
-            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
             "active" : strconv.FormatBool(active)}).
-        SetAuthToken(api_struct.Key).
-        Get(api_struct.Host + request_path)
+        SetAuthToken(cbpKey.Key).
+        Get(cbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -135,25 +129,22 @@ func rest_get_profiles(api_struct apiConfig, request_path string, active bool) (
     return resp.StatusCode(), resp.Body()
 }
 
-func rest_post_generate_address(api_struct apiConfig, request_path string) (int, []byte) { //POST_REQUEST_GENERATE_ADDRESS
-    request_method := "POST"
+func cbp_rest_post_address(path string) (int, []byte) { //POST_REQUEST_GENERATE_ADDRESS
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
-
-    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path) //create hashed message to send
 
     client := resty.New() //create REST session
-
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : api_struct.Key,
-            "CB-ACCESS-SIGN" : message_hashed,
-            "CB-ACCESS-TIMESTAMP" : time_current,
-            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
             "Content-Type" : "application/json"}).
-        SetAuthToken(api_struct.Key).
-        Post(api_struct.Host + request_path)
+        SetAuthToken(cbpKey.Key).
+        Post(cbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -169,31 +160,28 @@ func rest_post_generate_address(api_struct apiConfig, request_path string) (int,
     return resp.StatusCode(), resp.Body()
 }
 
-func rest_post_convert_currency(api_struct apiConfig, request_struct reqConvert) (int, []byte) { //POST_REQUEST_CONVERT_CURRENCY
-    request_method := "POST"
+func cbp_rest_post_convert(path string, profile_id string, from string, to string, amount string, nonce string) (int, []byte) { //POST_REQUEST_CONVERT_CURRENCY
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
-
-    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_struct.Request_path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path) //create hashed message to send
 
     client := resty.New() //create REST session
-
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : api_struct.Key,
-            "CB-ACCESS-SIGN" : message_hashed,
-            "CB-ACCESS-TIMESTAMP" : time_current,
-            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
-            "profile_id" : request_struct.Profile_id,
-            "from" : request_struct.From,
-            "to" : request_struct.To,
-            "amount" : request_struct.Amount,
-            "nonce" : request_struct.Nonce}).
-        SetAuthToken(api_struct.Key).
-        Post(api_struct.Host + request_struct.Request_path)
+            "profile_id" : profile_id,
+            "from" : from,
+            "to" : to,
+            "amount" : amount,
+            "nonce" : nonce}).
+        SetAuthToken(cbpKey.Key).
+        Post(cbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -208,30 +196,27 @@ func rest_post_convert_currency(api_struct apiConfig, request_struct reqConvert)
 
     return resp.StatusCode(), resp.Body()
 }
-func rest_post_transfer_payment(api_struct apiConfig, request_struct reqTransfer) (int, []byte) { //POST_REQUEST_(WITHDRAW/DEPOSIT)_PAYMENT
-    request_method := "POST"
+func cbp_rest_post_payment(path string, profile_id string, amount string, payment_method_id string, currency string) (int, []byte) { //POST_REQUEST_(WITHDRAW/DEPOSIT)_PAYMENT
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
-
-    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_struct.Request_path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path) //create hashed message to send
 
     client := resty.New() //create REST session
-
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : api_struct.Key,
-            "CB-ACCESS-SIGN" : message_hashed,
-            "CB-ACCESS-TIMESTAMP" : time_current,
-            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
-            "profile_id" : request_struct.Profile_id,
-            "amount" : request_struct.Amount,
-            "payment_method_id" : request_struct.Payment_method_id,
-            "currency" : request_struct.Amount}).
-        SetAuthToken(api_struct.Key).
-        Post(api_struct.Host + request_struct.Request_path)
+            "profile_id" : profile_id,
+            "amount" : amount,
+            "payment_method_id" : payment_method_id,
+            "currency" : currency}).
+        SetAuthToken(cbpKey.Key).
+        Post(cbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -247,30 +232,27 @@ func rest_post_transfer_payment(api_struct apiConfig, request_struct reqTransfer
     return resp.StatusCode(), resp.Body()
 }
 
-func rest_post_transfer_coinbase(api_struct apiConfig, request_struct reqTransfer) (int, []byte) { //POST_REQUEST_WITHDRAW/DEPOSIT
-    request_method := "POST"
+func cbp_rest_post_coinbase(path string, profile_id string, amount string, coinbase_account_id string, currency string) (int, []byte) { //POST_REQUEST_WITHDRAW/DEPOSIT
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    time_current := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
-
-    message_hashed := gen_api_message(api_struct.Secret, time_current, request_method, request_struct.Request_path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path) //create hashed message to send
 
     client := resty.New() //create REST session
-
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : api_struct.Key,
-            "CB-ACCESS-SIGN" : message_hashed,
-            "CB-ACCESS-TIMESTAMP" : time_current,
-            "CB-ACCESS-PASSPHRASE" : api_struct.Password,
+            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
-            "profile_id" : request_struct.Profile_id,
-            "amount" : request_struct.Amount,
-            "coinbase_account_id" : request_struct.Coinbase_account_id,
-            "currency" : request_struct.Amount}).
-        SetAuthToken(api_struct.Key).
-        Post(api_struct.Host + request_struct.Request_path)
+            "profile_id" : profile_id,
+            "amount" : amount,
+            "coinbase_account_id" : coinbase_account_id,
+            "currency" : currency}).
+        SetAuthToken(cbpKey.Key).
+        Post(cbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")

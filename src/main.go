@@ -7,6 +7,8 @@ import (
         "github.com/BurntSushi/toml"
 )
 
+var cbpKey cbpConfig //global struct that stores Coinbase Pro credentials
+
 func main() {
     f := "api.toml" //default configuration file
     if _, err := os.Stat(f); err != nil { //check configuration file exists
@@ -14,13 +16,12 @@ func main() {
         os.Exit(1)
     }
 
-    var api_struct apiConfig //struct that stores API key information
-    if _, err := toml.DecodeFile(f, &api_struct); err != nil { //decode TOML file
+    if _, err := toml.DecodeFile(f, &cbpKey); err != nil { //decode TOML file
         fmt.Println("ERROR decoding toml configuration")
         os.Exit(1)
     }
 
     //add check for missing config elements
    
-    rest_handler(api_struct) //rest handle function
+    rest_handler() //rest handle function
 }

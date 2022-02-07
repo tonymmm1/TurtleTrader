@@ -1,3 +1,4 @@
+//Coinbase Pro API handler functions
 package main
 
 import (
@@ -7,22 +8,22 @@ import (
 )
 
 const ( //Common return codes (https://docs.cloud.coinbase.com/exchange/docs/requests)
-    STATUS_CODE_SUCCESS int = 200           //Success
-    STATUS_CODE_BAD_REQUEST = 400           //Bad Request -- Invalid request format
-    STATUS_CODE_UNAUTHORIZED = 401          //Unauthorized -- Invalid API Key
-    STATUS_CODE_FORBIDDEN = 403             //Forbidden -- You do not have access to the requested resource
-    STATUS_CODE_NOT_FOUND = 404             //Not Found
-    STATUS_CODE_INTERNAL_SERVER_ERROR = 500 //Internal Server Error -- We had a problem with our server
+    CBP_STATUS_CODE_SUCCESS int = 200           //Success
+    CBP_STATUS_CODE_BAD_REQUEST = 400           //Bad Request -- Invalid request format
+    CBP_STATUS_CODE_UNAUTHORIZED = 401          //Unauthorized -- Invalid API Key
+    CBP_STATUS_CODE_FORBIDDEN = 403             //Forbidden -- You do not have access to the requested resource
+    CBP_STATUS_CODE_NOT_FOUND = 404             //Not Found
+    CBP_STATUS_CODE_INTERNAL_SERVER_ERROR = 500 //Internal Server Error -- We had a problem with our server
 )
 
-type apiConfig struct { //configuration toml file struct
+type cbpConfig struct { //Coinbase Pro configuration
     Host string
     Key string
     Password string
     Secret string
 }
 
-type apiAccount struct { //struct to store API account
+type cbpAccount struct { //Get all accounts for a profile/Get a single account by id
     Id string `json:"id"`
     Currency string `json:"currency"`
     Balance string `json:"balance"`
@@ -32,20 +33,16 @@ type apiAccount struct { //struct to store API account
     Trading_enabled bool `json:"trading_enabled"`
 }
 
-type apiLedger struct { //struct to store API ledger
+type cbpLedger struct { //struct to store API ledger
     Id string `json:"id"`
     Amount string `json:"amount"`
     Balance string `json:"balance"`
     Created_at string `json:"created_at"`
     Type string `json:"type"`
-    Details struct {
-        Order_id string `json:"order_id"`
-        Product_id string `json:"product_id"`
-        Trade_id string `json:"trade_id"`
-    } `json:"details"`
+    Details map[string] interface {} `json:"details"`
 }
 
-type apiHold struct { //struct to store API hold
+type cbpHold struct { //struct to store API hold
     Id string `json:"id"`
     Created_at string `json:"created_at"`
     Amount string `json:"amount"`
@@ -53,7 +50,7 @@ type apiHold struct { //struct to store API hold
     Type string `json:"type"`
 }
 
-type apiPastTransfer struct { //struct to store API past transfer
+type cbpPastTransfer struct { //struct to store API past transfer
     Id string `json:"id"`
     Type string `json:"type"`
     Created_at string `json:"created_at"`
@@ -62,17 +59,11 @@ type apiPastTransfer struct { //struct to store API past transfer
     Processed_at string `json:"processed_at"`
     User_nonce string `json:"user_nonce"`
     Amount string `json:"amount"`
-    Details struct {
-        Coinbase_payout_at string `json:"coinbase_payout_at"`
-        Coinbase_account_id string `json:"coinbase_account_id"`
-        Coinbase_deposit_id string `json:"coinbase_deposit_id"`
-        Coinbase_payment_method_id string `json:"coinbase_payment_method_id"`
-        Coinbase_payment_method_type string `json:"coinbase_payment_method_type"`
-    } `json:"details"`
+    Details map[string] interface {} `json:"details"`
     Idem string `json:"idem"`
 }
 
-type apiWallet struct { //struct to store API wallet
+type cbpWallet struct { //struct to store API wallet
     Id string `json:"id"`
     Name string `json:"name"`
     Balance string `json:"balance"`
@@ -81,7 +72,7 @@ type apiWallet struct { //struct to store API wallet
     Primary bool `json:"primary"`
     Active bool `json:"active"`
     Available_on_consumer bool `json:"available_on_consumer"`
-    Ready bool `json:"ready"`
+    //Ready bool `json:"ready"`
     Wire_deposit_information struct {
         Account_number string `json:"account_number"`
         Routing_number string `json:"routing_number"`
@@ -125,13 +116,13 @@ type apiWallet struct { //struct to store API wallet
         Account_name string `json:"account_name"`
         Reference string `json:"reference"`
     } `json:"uk_deposit_information"`
-    Destination_tag_name string `json:"destination_tag_name"`
-    Destination_tag_regex string `json:"destination_tag_regex"`
+    //Destination_tag_name string `json:"destination_tag_name"`
+    //Destination_tag_regex string `json:"destination_tag_regex"`
     Hold_balance string `json:"hold_balance"`
     Hold_currency string `json:"hold_currency"`
 }
 
-type apiCryptoAddress struct { //struct to store API generated crypto address
+type cbpCryptoAddress struct { //struct to store API generated crypto address
     Id string `json:"id"`
     Address string `json:"address"`
     Address_info struct {
@@ -150,22 +141,13 @@ type apiCryptoAddress struct { //struct to store API generated crypto address
         Details string `json:"details"`
         Image_url string `json:"image_url"`
     } `json:"warnings"`
-    Legacy_address string `json:"legacy_address"`
-    Destination_tag string `json:"destination_tag"`
-    Deposit_uri string `json:"deposity_uri"`
-    Callback_url string `json:"callback_url"`
+    //Legacy_address string `json:"legacy_address"`
+    //Destination_tag string `json:"destination_tag"`
+    //Deposit_uri string `json:"deposity_uri"`
+    //Callback_url string `json:"callback_url"`
 }
 
-type reqConvert struct {
-    Request_path string
-    Profile_id string
-    From string
-    To string
-    Amount string
-    Nonce string
-}
-
-type apiConvert struct { //struct to store API conversion
+type cbpConvert struct { //Convert Currency/Get a conversion
     Id string `json:"id"`
     Amount string `json:"amount"`
     From_account_id string `json:"from_account_id"`
@@ -174,28 +156,24 @@ type apiConvert struct { //struct to store API conversion
     To string `json:"to"`
 }
 
-type reqTransfer struct {
-    Request_path string
-    Profile_id string
-    Amount string
-    Payment_method_id string
-    Coinbase_account_id string
-    Currency string
-    Crypto_address string   //crypto address
-    Destination_tag string  //crypto address
-    No_destination_tag bool //crypto address
-    Two_factor_code string  //crypto address
-    Nonce int32 //unique value //crypto address
-    Fee string  //set with post_get_fee_estimate //crypto address
+type cbpCurrency struct { //Get all known currencies
+    Id string
+    Name string
+    Min_size string
+    Status string
+    Message string
+    Max_precision string
+    Convertible_to string
+    Details map[string] interface {} `json:"details"`
 }
 
-type apiFee struct {
+type cbpFee struct { //Get fees
     Taker_fee_rate string `json:"taker_fee_rate"`
     Maker_fee_rate string `json:"maker_fee_rate"`
     Usd_volume string `json:"usd_volume"`
 }
 
-type apiTransfer struct {
+type cbpTransfer struct { //Withdraw/deposit to/from Coinbase/payment
     Id string `json:"id"`
     Amount string `json:"amount"`
     Currency string `json:"currency"`
@@ -204,17 +182,7 @@ type apiTransfer struct {
     Subtotal string `json:"subtotal"`
 }
 
-type reqFill struct {
-    Request_path string
-    Order_id string
-    Product_id string
-    Profile_id string
-    Limit int64
-    Before int64
-    After int64
-}
-
-type apiFill struct {
+type cbpFill struct {
     Trade_id int32 `json:"id"`
     Product_id string `json:"product_id"`
     Order_id string `json:"order_id"`
@@ -230,7 +198,7 @@ type apiFill struct {
     Usd_volume string `json:"usd_volume"`
 }
 
-type apiProfile struct {
+type cbpProfile struct {
     Id string `json:"id"`
     User_id string `json:"user_id"`
     Name string `json:"name"`
@@ -240,84 +208,84 @@ type apiProfile struct {
     Created_at string `json:"created_at"`
 }
 
-type apiPrice struct {
+type cbpPrice struct {
     Timestamp string `json:"timestamp"`
     Messages []string `json:"messages"`
     Signatures []string `json:"signatures"`
     Prices map[string] interface {} `json:"prices"`
 }
 
-func get_all_accounts(api_struct apiConfig) []apiAccount { //Get a list of trading accounts from the profile of the API key.
-    request_path := "/accounts"
+func cbp_get_all_accounts() []cbpAccount { //Get a list of trading accounts from the profile of the API key.
+    path := "/accounts"
 
-    var api_accounts []apiAccount
+    var accounts []cbpAccount
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_accounts); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &accounts); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
     //debug
-    fmt.Println("api_accounts:")
+    fmt.Println("accounts:")
     fmt.Println()
-    for account := range api_accounts {
-        fmt.Println("api_accounts[", account, "]")
-        fmt.Println(api_accounts[account].Id)
-        fmt.Println(api_accounts[account].Currency)
-        fmt.Println(api_accounts[account].Balance)
-        fmt.Println(api_accounts[account].Hold)
-        fmt.Println(api_accounts[account].Available)
-        fmt.Println(api_accounts[account].Profile_id)
-        fmt.Println(api_accounts[account].Trading_enabled)
+    for account := range accounts {
+        fmt.Println("accounts[", account, "]")
+        fmt.Println(accounts[account].Id)
+        fmt.Println(accounts[account].Currency)
+        fmt.Println(accounts[account].Balance)
+        fmt.Println(accounts[account].Hold)
+        fmt.Println(accounts[account].Available)
+        fmt.Println(accounts[account].Profile_id)
+        fmt.Println(accounts[account].Trading_enabled)
         fmt.Println()
     }
 
-    return api_accounts
+    return accounts
 }
 
-func get_single_account(api_struct apiConfig, api_account_id string) apiAccount { //Information for a single account.
-    request_path := "/accounts/" + api_account_id
+func cbp_get_single_account(account_id string) cbpAccount { //Information for a single account.
+    path := "/accounts/" + account_id
 
-    var api_account apiAccount //store single apiAccount
+    var account cbpAccount //store single cbpAccount
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_account); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &account); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
     //debug
-    fmt.Println("api_account:")
-    fmt.Println(api_account.Id)
-    fmt.Println(api_account.Currency)
-    fmt.Println(api_account.Balance)
-    fmt.Println(api_account.Hold)
-    fmt.Println(api_account.Available)
-    fmt.Println(api_account.Profile_id)
-    fmt.Println(api_account.Trading_enabled)
+    fmt.Println("account:")
+    fmt.Println(account.Id)
+    fmt.Println(account.Currency)
+    fmt.Println(account.Balance)
+    fmt.Println(account.Hold)
+    fmt.Println(account.Available)
+    fmt.Println(account.Profile_id)
+    fmt.Println(account.Trading_enabled)
     fmt.Println()
 
-    return api_account
+    return account
 }
 
-func get_single_account_holds(api_struct apiConfig, api_account_id string) []apiHold { //List the holds of an account that belong to the same profile as the API key.
-    request_path := "/accounts/" + api_account_id + "/holds" //?limit=100" //implement limit logic later
+func cbp_get_single_account_holds(account_id string) []cbpHold { //List the holds of an account that belong to the same profile as the API key.
+    path := "/accounts/" + account_id + "/holds" //?limit=100" //implement limit logic later
 
-    var api_account_holds []apiHold
+    var holds []cbpHold
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -325,331 +293,314 @@ func get_single_account_holds(api_struct apiConfig, api_account_id string) []api
         return nil
     }
 
-    if err := json.Unmarshal(response_body, &api_account_holds); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &holds); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
     //debug
-    fmt.Println("api_account_holds:")
-    for hold := range api_account_holds {
-        fmt.Println("api_account_holds[", hold,"]")
-        fmt.Println(api_account_holds[hold].Id)
-        fmt.Println(api_account_holds[hold].Created_at)
-        fmt.Println(api_account_holds[hold].Amount)
-        fmt.Println(api_account_holds[hold].Ref)
-        fmt.Println(api_account_holds[hold].Type)
+    fmt.Println("holds:")
+    for hold := range holds {
+        fmt.Println("holds[", hold,"]")
+        fmt.Println(holds[hold].Id)
+        fmt.Println(holds[hold].Created_at)
+        fmt.Println(holds[hold].Amount)
+        fmt.Println(holds[hold].Ref)
+        fmt.Println(holds[hold].Type)
         fmt.Println()
     }
 
-    return api_account_holds
+    return holds
 }
 
-func get_single_account_ledgers(api_struct apiConfig, api_account_id string) []apiLedger { //List the holds of an account that belong to the same profile as the API key.
-    request_path := "/accounts/" + api_account_id + "/ledger" //?limit=100" //implement limit logic later
+func cbp_get_single_account_ledgers(account_id string) []cbpLedger { //List the holds of an account that belong to the same profile as the API key.
+    path := "/accounts/" + account_id + "/ledger" //?limit=100" //implement limit logic later
 
-    var api_account_ledgers []apiLedger
+    var ledgers []cbpLedger
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_account_ledgers); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &ledgers); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
     //debug
-    fmt.Println("account_id:", api_account_id)
-    for ledger := range api_account_ledgers {
-        fmt.Println(api_account_ledgers[ledger].Id)
-        fmt.Println(api_account_ledgers[ledger].Amount)
-        fmt.Println(api_account_ledgers[ledger].Balance)
-        fmt.Println(api_account_ledgers[ledger].Created_at)
-        fmt.Println(api_account_ledgers[ledger].Type)
-        fmt.Println(api_account_ledgers[ledger].Details.Order_id)
-        fmt.Println(api_account_ledgers[ledger].Details.Product_id)
-        fmt.Println(api_account_ledgers[ledger].Details.Trade_id)
+    fmt.Println("account_id:", account_id)
+    for ledger := range ledgers {
+        fmt.Println(ledgers[ledger].Id)
+        fmt.Println(ledgers[ledger].Amount)
+        fmt.Println(ledgers[ledger].Balance)
+        fmt.Println(ledgers[ledger].Created_at)
+        fmt.Println(ledgers[ledger].Type)
+        for k, v := range ledgers[ledger].Details {
+            fmt.Println(k, ":", v)
+        }
         fmt.Println()
     }
 
-    return api_account_ledgers
+    return ledgers
 }
 
-func get_single_account_transfers(api_struct apiConfig, api_account_id string) []apiPastTransfer { //Lists past withdrawals and deposits for an account.
-    request_path := "/accounts/" + api_account_id + "/transfers" //?limit=100" //implement limit logic later
+func cbp_get_single_account_transfers(account_id string) []cbpPastTransfer { //Lists past withdrawals and deposits for an account.
+    path := "/accounts/" + account_id + "/transfers" //?limit=100" //implement limit logic later
 
-    var api_account_transfers []apiPastTransfer
+    var transfers []cbpPastTransfer
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_account_transfers); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &transfers); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
     //debug
-    fmt.Println("account_id:", api_account_id)
-    for transfer := range api_account_transfers {
-        fmt.Println(api_account_transfers[transfer].Id)
-        fmt.Println(api_account_transfers[transfer].Type)
-        fmt.Println(api_account_transfers[transfer].Created_at)
-        fmt.Println(api_account_transfers[transfer].Completed_at)
-        fmt.Println(api_account_transfers[transfer].Canceled_at)
-        fmt.Println(api_account_transfers[transfer].Processed_at)
-        fmt.Println(api_account_transfers[transfer].User_nonce)
-        fmt.Println(api_account_transfers[transfer].Amount)
-        fmt.Println(api_account_transfers[transfer].Details.Coinbase_payout_at)
-        fmt.Println(api_account_transfers[transfer].Details.Coinbase_account_id)
-        fmt.Println(api_account_transfers[transfer].Details.Coinbase_deposit_id)
-        fmt.Println(api_account_transfers[transfer].Details.Coinbase_payment_method_id)
-        fmt.Println(api_account_transfers[transfer].Details.Coinbase_payment_method_type)
-        fmt.Println(api_account_transfers[transfer].Idem)
+    fmt.Println("account_id:", account_id)
+    for transfer := range transfers {
+        fmt.Println(transfers[transfer].Id)
+        fmt.Println(transfers[transfer].Type)
+        fmt.Println(transfers[transfer].Created_at)
+        fmt.Println(transfers[transfer].Completed_at)
+        fmt.Println(transfers[transfer].Canceled_at)
+        fmt.Println(transfers[transfer].Processed_at)
+        fmt.Println(transfers[transfer].User_nonce)
+        fmt.Println(transfers[transfer].Amount)
+        for k, v := range transfers[transfer].Details {
+            fmt.Println(k, ":", v)
+        }
         fmt.Println()
     }
 
-    return api_account_transfers 
+    return transfers 
 }
 
-func get_all_wallets(api_struct apiConfig) []apiWallet { //Gets all the user's available Coinbase wallets
-    request_path := "/coinbase-accounts"
+func cbp_get_all_wallets() []cbpWallet { //Gets all the user's available Coinbase wallets
+    path := "/coinbase-accounts"
 
-    var api_accounts_wallets []apiWallet
+    var wallets []cbpWallet
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_accounts_wallets); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &wallets); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
     //debug
-    fmt.Println("api_account_wallets: ", api_accounts_wallets)
+    fmt.Println("api_account_wallets: ", wallets)
     fmt.Println()
-    for wallet := range api_accounts_wallets {
+    for wallet := range wallets {
         fmt.Println()
-        fmt.Println("api_accounts_wallets[", wallet, "]")
-        fmt.Println(api_accounts_wallets[wallet].Id)
-        fmt.Println(api_accounts_wallets[wallet].Name)
-        fmt.Println(api_accounts_wallets[wallet].Balance)
-        fmt.Println(api_accounts_wallets[wallet].Currency)
-        fmt.Println(api_accounts_wallets[wallet].Type)
-        fmt.Println(api_accounts_wallets[wallet].Primary)
-        fmt.Println(api_accounts_wallets[wallet].Active)
-        fmt.Println(api_accounts_wallets[wallet].Available_on_consumer)
-        if api_accounts_wallets[wallet].Ready == (true || false) {
-            fmt.Println(api_accounts_wallets[wallet].Ready)
+        fmt.Println("wallets[", wallet, "]")
+        fmt.Println(wallets[wallet].Id)
+        fmt.Println(wallets[wallet].Name)
+        fmt.Println(wallets[wallet].Balance)
+        fmt.Println(wallets[wallet].Currency)
+        fmt.Println(wallets[wallet].Type)
+        fmt.Println(wallets[wallet].Primary)
+        fmt.Println(wallets[wallet].Active)
+        fmt.Println(wallets[wallet].Available_on_consumer)
+        /*if wallets[wallet].Ready == (true || false) {
+            fmt.Println(wallets[wallet].Ready)
+        }*/
+        if wallets[wallet].Wire_deposit_information.Account_name != "" {
+            fmt.Println(wallets[wallet].Wire_deposit_information.Account_number)
+            fmt.Println(wallets[wallet].Wire_deposit_information.Routing_number)
+            fmt.Println(wallets[wallet].Wire_deposit_information.Bank_name)
+            fmt.Println(wallets[wallet].Wire_deposit_information.Bank_address)
+            fmt.Println(wallets[wallet].Wire_deposit_information.Bank_country.Code)
+            fmt.Println(wallets[wallet].Wire_deposit_information.Bank_country.Name)
+            fmt.Println(wallets[wallet].Wire_deposit_information.Account_name)
+            fmt.Println(wallets[wallet].Wire_deposit_information.Account_address)
+            fmt.Println(wallets[wallet].Wire_deposit_information.Reference)
         }
-        if api_accounts_wallets[wallet].Wire_deposit_information.Account_name != "" {
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Account_number)
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Routing_number)
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Bank_name)
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Bank_address)
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Bank_country.Code)
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Bank_country.Name)
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Account_name)
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Account_address)
-            fmt.Println(api_accounts_wallets[wallet].Wire_deposit_information.Reference)
+        if wallets[wallet].Swift_deposit_information.Account_name != "" {
+            fmt.Println(wallets[wallet].Swift_deposit_information.Account_number)
+            fmt.Println(wallets[wallet].Swift_deposit_information.Routing_number)
+            fmt.Println(wallets[wallet].Swift_deposit_information.Bank_name)
+            fmt.Println(wallets[wallet].Swift_deposit_information.Bank_address)
+            fmt.Println(wallets[wallet].Swift_deposit_information.Bank_country.Code)
+            fmt.Println(wallets[wallet].Swift_deposit_information.Bank_country.Name)
+            fmt.Println(wallets[wallet].Swift_deposit_information.Account_name)
+            fmt.Println(wallets[wallet].Swift_deposit_information.Account_address)
+            fmt.Println(wallets[wallet].Swift_deposit_information.Reference)
         }
-        if api_accounts_wallets[wallet].Swift_deposit_information.Account_name != "" {
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Account_number)
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Routing_number)
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Bank_name)
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Bank_address)
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Bank_country.Code)
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Bank_country.Name)
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Account_name)
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Account_address)
-            fmt.Println(api_accounts_wallets[wallet].Swift_deposit_information.Reference)
+        if wallets[wallet].Sepa_deposit_information.Account_name != ""{
+            fmt.Println(wallets[wallet].Sepa_deposit_information.Iban)
+            fmt.Println(wallets[wallet].Sepa_deposit_information.Swift)
+            fmt.Println(wallets[wallet].Sepa_deposit_information.Bank_name)
+            fmt.Println(wallets[wallet].Sepa_deposit_information.Bank_address)
+            fmt.Println(wallets[wallet].Sepa_deposit_information.Bank_country_name)
+            fmt.Println(wallets[wallet].Sepa_deposit_information.Account_name)
+            fmt.Println(wallets[wallet].Sepa_deposit_information.Account_address)
+            fmt.Println(wallets[wallet].Sepa_deposit_information.Reference)
         }
-        if api_accounts_wallets[wallet].Sepa_deposit_information.Account_name != ""{
-            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Iban)
-            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Swift)
-            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Bank_name)
-            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Bank_address)
-            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Bank_country_name)
-            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Account_name)
-            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Account_address)
-            fmt.Println(api_accounts_wallets[wallet].Sepa_deposit_information.Reference)
+        if wallets[wallet].Uk_deposit_information.Account_name != "" {
+            fmt.Println(wallets[wallet].Uk_deposit_information.Sort_code)
+            fmt.Println(wallets[wallet].Uk_deposit_information.Account_number)
+            fmt.Println(wallets[wallet].Uk_deposit_information.Bank_name)
+            fmt.Println(wallets[wallet].Uk_deposit_information.Account_name)
+            fmt.Println(wallets[wallet].Uk_deposit_information.Reference)
         }
-        if api_accounts_wallets[wallet].Uk_deposit_information.Account_name != "" {
-            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Sort_code)
-            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Account_number)
-            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Bank_name)
-            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Account_name)
-            fmt.Println(api_accounts_wallets[wallet].Uk_deposit_information.Reference)
+        /*if wallets[wallet].Destination_tag_name != "" {
+            fmt.Println(wallets[wallet].Destination_tag_name)
         }
-        if api_accounts_wallets[wallet].Destination_tag_name != "" {
-            fmt.Println(api_accounts_wallets[wallet].Destination_tag_name)
-        }
-        if api_accounts_wallets[wallet].Destination_tag_regex != "" {
-            fmt.Println(api_accounts_wallets[wallet].Destination_tag_regex)
-        }
-        fmt.Println(api_accounts_wallets[wallet].Hold_balance)
-        fmt.Println(api_accounts_wallets[wallet].Hold_currency)
+        if wallets[wallet].Destination_tag_regex != "" {
+            fmt.Println(wallets[wallet].Destination_tag_regex)
+        }*/
+        fmt.Println(wallets[wallet].Hold_balance)
+        fmt.Println(wallets[wallet].Hold_currency)
     }
     fmt.Println()
     
-    return api_accounts_wallets
+    return wallets
 }
 
-func generate_crypto_address(api_struct apiConfig, api_account_id string) apiCryptoAddress { //Generates a one-time crypto address for depositing crypto.
-    request_path := "/coinbase-accounts/" + api_account_id + "/addresses"
+func cbp_generate_crypto_address(account_id string) cbpCryptoAddress { //Generates a one-time crypto address for depositing crypto.
+    path := "/coinbase-accounts/" + account_id + "/addresses"
 
-    var api_account_address apiCryptoAddress
+    var address cbpCryptoAddress
 
-    response_status, response_body := rest_post_generate_address(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_post_address(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_account_address); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &address); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
     //debug
-    fmt.Println("api_account_address:", api_account_id)
+    fmt.Println("address:", account_id)
     fmt.Println()
-    fmt.Println(api_account_address.Id)
-    fmt.Println(api_account_address.Address)
-    if api_account_address.Address_info.Address != "" {
-        fmt.Println(api_account_address.Address_info.Address)
-        fmt.Println(api_account_address.Address_info.Destination_tag)
+    fmt.Println(address.Id)
+    fmt.Println(address.Address)
+    if address.Address_info.Address != "" {
+        fmt.Println(address.Address_info.Address)
+        fmt.Println(address.Address_info.Destination_tag)
     }
-    fmt.Println(api_account_address.Name)
-    fmt.Println(api_account_address.Created_at)
-    fmt.Println(api_account_address.Updated_at)
-    if api_account_address.Network != "" {
-        fmt.Println(api_account_address.Network)
+    fmt.Println(address.Name)
+    fmt.Println(address.Created_at)
+    fmt.Println(address.Updated_at)
+    if address.Network != "" {
+        fmt.Println(address.Network)
     }
-    if api_account_address.Uri_scheme != "" {
-        fmt.Println(api_account_address.Uri_scheme)
+    if address.Uri_scheme != "" {
+        fmt.Println(address.Uri_scheme)
     }
-    fmt.Println(api_account_address.Resource)
-    fmt.Println(api_account_address.Resource_path)
-    if api_account_address.Warnings != nil {
-        for warning := range api_account_address.Warnings {
+    fmt.Println(address.Resource)
+    fmt.Println(address.Resource_path)
+    if address.Warnings != nil {
+        for warning := range address.Warnings {
             fmt.Println()
-            fmt.Println("api_account_address.Warnings[", warning, "]")
-            fmt.Println(api_account_address.Warnings[warning].Title)
-            fmt.Println(api_account_address.Warnings[warning].Details)
-            fmt.Println(api_account_address.Warnings[warning].Image_url)
+            fmt.Println("address.Warnings[", warning, "]")
+            fmt.Println(address.Warnings[warning].Title)
+            fmt.Println(address.Warnings[warning].Details)
+            fmt.Println(address.Warnings[warning].Image_url)
         }
     }
-    if api_account_address.Legacy_address != "" {
-        fmt.Println(api_account_address.Legacy_address)
+    /*if address.Legacy_address != "" {
+        fmt.Println(address.Legacy_address)
     }
-    if api_account_address.Destination_tag != "" {
-        fmt.Println(api_account_address.Destination_tag)
+    if address.Destination_tag != "" {
+        fmt.Println(address.Destination_tag)
     }
-    if api_account_address.Deposit_uri != "" {
-        fmt.Println(api_account_address.Deposit_uri)
+    if address.Deposit_uri != "" {
+        fmt.Println(address.Deposit_uri)
     }
-    if api_account_address.Callback_url != "" {
-        fmt.Println(api_account_address.Callback_url)
-    }
+    if address.Callback_url != "" {
+        fmt.Println(address.Callback_url)
+    }*/
     fmt.Println()
 
-    return api_account_address
+    return address
 }
 
-func convert_currency(api_struct apiConfig, profile_id string, from string, to string, amount string) apiConvert { //Converts funs from currency to currency
-    request_path := "/conversions"
+func cbp_convert_currency(profile_id string, from string, to string, amount string, nonce string) cbpConvert { //Converts funs from currency to currency
+    path := "/conversions"
 
-    var request_struct reqConvert
-    var api_account_convert apiConvert
+    var convert cbpConvert
 
-    request_struct.Request_path = request_path
-    request_struct.Profile_id = profile_id
-    request_struct.From = from
-    request_struct.To = to
-    request_struct.Amount = amount
-
-    response_status, response_body := rest_post_convert_currency(api_struct, request_struct)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_post_convert(path, profile_id, from, to, amount, nonce)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_account_convert); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &convert); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
-    return api_account_convert
+    return convert
 }
 
-func deposit_coinbase_account(api_struct apiConfig, request_profile_id string, request_amount string, request_coinbase_account_id string, request_currency string) apiTransfer {
-    request_path := "/deposits/coinbase-account"
+func cbp_deposit_coinbase_account(profile_id string, amount string, account_id string, currency string) cbpTransfer {
+    path := "/deposits/coinbase-account"
 
-    var request_struct reqTransfer
-    var api_account_deposit apiTransfer
+    var deposit cbpTransfer
 
-    request_struct.Request_path = request_path
-    request_struct.Profile_id = request_profile_id
-    request_struct.Amount = request_amount
-    request_struct.Coinbase_account_id = request_coinbase_account_id
-    request_struct.Currency = request_currency
-
-    response_status, response_body := rest_post_transfer_coinbase(api_struct, request_struct)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_post_coinbase(path, profile_id, amount, account_id, currency)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_account_deposit); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &deposit); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
-    return api_account_deposit
+    return deposit
 }
 
-func get_fees(api_struct apiConfig) apiFee {
-    request_path := "/fees"
+func cbp_get_fees() cbpFee {
+    path := "/fees"
 
-    var api_account_fees apiFee
+    var fees cbpFee
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_account_fees); err != nil { //JSON unmarshal REST response body to store as struct
+    if err := json.Unmarshal(response_body, &fees); err != nil { //JSON unmarshal REST response body to store as struct
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
 
     //debug
-    fmt.Println("api_account_fees:")
-    fmt.Println(api_account_fees.Taker_fee_rate)
-    fmt.Println(api_account_fees.Maker_fee_rate)
-    fmt.Println(api_account_fees.Usd_volume)
+    fmt.Println("fees:")
+    fmt.Println(fees.Taker_fee_rate)
+    fmt.Println(fees.Maker_fee_rate)
+    fmt.Println(fees.Usd_volume)
     fmt.Println()
 
-    return api_account_fees
+    return fees
 }
 
-func get_all_fills(api_struct apiConfig, order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []apiFill {
-    request_path := "/fills"
+func cbp_get_all_fills(order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []cbpFill {
+    path := "/fills"
 
-    var api_account_fills []apiFill
+    var api_account_fills []cbpFill
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -679,13 +630,13 @@ func get_all_fills(api_struct apiConfig, order_id string, product_id string, pro
     return api_account_fills
 }
 
-func get_profiles(api_struct apiConfig, active bool) []apiProfile{
-    request_path := "/profiles"
+func cbp_get_profiles(active bool) []cbpProfile{
+    path := "/profiles"
 
-    var profiles []apiProfile
+    var profiles []cbpProfile
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -713,13 +664,13 @@ func get_profiles(api_struct apiConfig, active bool) []apiProfile{
     return profiles
 }
 
-func get_signed_prices(api_struct apiConfig) apiPrice {
-    request_path := "/oracle"
+func cbp_get_signed_prices() cbpPrice {
+    path := "/oracle"
 
-    var prices apiPrice
+    var prices cbpPrice
 
-    response_status, response_body := rest_get(api_struct, request_path)
-    if response_status != STATUS_CODE_SUCCESS {
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
