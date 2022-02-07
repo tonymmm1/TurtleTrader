@@ -12,20 +12,6 @@ import (
         "github.com/go-resty/resty/v2"
 )
 
-const ( //POST request types
-    POST_REQUEST_GENERATE_ADDRESS = 1
-    POST_REQUEST_CONVERT_CURRENCY = 2
-    POST_REQUEST_CREATE_ORDER = 3
-    POST_REQUEST_DEPOSIT_FROM_COINBASE = 4
-    POST_REQUEST_DEPOSIT_FROM_PAYMENT = 5
-    POST_REQUEST_WITHDRAW_TO_COINBASE = 6
-    POST_REQUEST_WITHDRAW_TO_CRYPTO = 7
-    POST_REQUEST_WITHDRAW_TO_PAYMENT = 8
-    POST_REQUEST_CREATE_PROFILE = 9
-    POST_REQUEST_TRANSFER_FUNDS_TO_PROFILE = 10
-    POST_REQUEST_CREATE_REPORT = 11
-)
-
 func gen_api_message(api_key_secret string, time_current string, request_method string, request_path string) string { //generate hashed message for REST requests
     message := time_current + request_method + request_path //construct prehase message
 
