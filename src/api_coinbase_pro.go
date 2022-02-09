@@ -735,6 +735,34 @@ func cbp_transfer_coinbase_account(profile_id string, amount string, account_id 
     return deposit
 }
 
+func cbp_transfer_payment_account(profile_id string, amount string, account_id string, currency string) cbpTransfer {
+    path := "/deposits/payment-method"
+
+    var deposit cbpTransfer
+
+    response_status, response_body := cbp_rest_post_payment(path, profile_id, amount, account_id, currency)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &deposit); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Deposit/Withdraw to/from Coinbase account")
+    fmt.Println(deposit.Id)
+    fmt.Println(deposit.Amount)
+    fmt.Println(deposit.Currency)
+    fmt.Println(deposit.Payout_at)
+    fmt.Println(deposit.Fee)
+    fmt.Println(deposit.Subtotal)
+
+    return deposit
+}
+
 func cbp_get_fees() cbpFee {
     path := "/fees"
 
