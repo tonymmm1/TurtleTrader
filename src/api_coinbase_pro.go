@@ -166,8 +166,8 @@ type cbpCurrency struct { //Get all known currency/Get a currency
         Group_types []string `json:"group_types"`
         Display_name string `json:"display_name"`
         Processing_time_seconds float64 `json:"processing_time_seconds"`
-        Min_withdrawl_amount float64 `json:"min_withdrawl_amount"`
-        Max_withdrawl_amount float64 `json:"max_withdrawl_amount"`
+        Min_withdrawal_amount float64 `json:"min_withdrawal_amount"`
+        Max_withdrawal_amount float64 `json:"max_withdrawal_amount"`
     } `json:"details"`
 }
 
@@ -590,8 +590,8 @@ func cbp_get_all_currencies() []cbpCurrency {
         }
         fmt.Println(currencies[currency].Details.Display_name)
         fmt.Println(currencies[currency].Details.Processing_time_seconds)
-        fmt.Println(currencies[currency].Details.Min_withdrawl_amount)
-        fmt.Println(currencies[currency].Details.Max_withdrawl_amount)
+        fmt.Println(currencies[currency].Details.Min_withdrawal_amount)
+        fmt.Println(currencies[currency].Details.Max_withdrawal_amount)
         fmt.Println()
     }
 
@@ -644,8 +644,8 @@ func cbp_get_currency(currency_id string) cbpCurrency {
     }
     fmt.Println(currency.Details.Display_name)
     fmt.Println(currency.Details.Processing_time_seconds)
-    fmt.Println(currency.Details.Min_withdrawl_amount)
-    fmt.Println(currency.Details.Max_withdrawl_amount)
+    fmt.Println(currency.Details.Min_withdrawal_amount)
+    fmt.Println(currency.Details.Max_withdrawal_amount)
     fmt.Println()
 
     return currency
