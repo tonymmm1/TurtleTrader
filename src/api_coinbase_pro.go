@@ -209,6 +209,101 @@ type cbpPayment struct { //Get all payment methods
     Resource string `json:"resource"`
     Resource_path string `json:"resource_path'`
     Verified bool `json:"verified"`
+    Limits struct {
+        Buy []struct {
+            Period_in_days int32 `json:"period_in_days"`
+            Total struct {
+                Amount string `json:"amount"`
+                Currency string `json:"currency"`
+            } `json:"total"`
+            Remaining struct {
+                Amount string `json:"amount"`
+                Currency string `json:"currency"`
+            } `json:"remaining"`
+        } `json:"buy"`
+        Instant_buy []struct {
+            Period_in_days int32 `json:"period_in_days"`
+            Total struct {
+                Amount string `json:"amount"`
+                Currency string `json:"currency"`
+            } `json:"total"`
+            Remaining struct {
+                Amount string `json:"amount"`
+                Currency string `json:"currency"`
+            } `json:"remaining"`
+        } `json:"instant_buy"`
+        Sell []struct {
+            Period_in_days int32 `json:"period_in_days"`
+            Total struct {
+                Amount string `json:"amount"`
+                Currency string `json:"currency"`
+            } `json:"total"`
+            Remaining struct {
+                Amount string `json:"amount"`
+                Currency string `json:"currency"`
+            } `json:"remaining"`
+        } `json:"sell"`
+        Deposit []struct {
+            Period_in_days int32 `json:"period_in_days"`
+            Total struct {
+                Amount string `json:"amount"`
+                Currency string `json:"currency"`
+            } `json:"total"`
+            Remaining struct {
+                Amount string `json:"amount"`
+                Currency string `json:"currency"`
+            } `json:"remaining"`
+        } `json:"deposit"`
+    } `json:"limits"`
+    Allow_buy bool `json:"allow_buy"`
+    Allow_sell bool `json:"allow_sell"`
+    Allow_deposit bool `json:"allow_deposit"`
+    Allow_withdraw bool `json:"allow_withdraw"`
+    Fiat_account struct {
+        Id string `json:"id"`
+        Resource string `json:"resource"`
+        Resource_path string `json:"resource_path"`
+    } `json:"fiat_account"`
+    Crypto_account struct {
+        Id string `json:"id"`
+        Resource string `json:"resource"`
+        Resource_path string `json:"resouce_path"`
+    } `json:"crypto_account"`
+    Recurring_options []struct {
+        Period string `json:"period"`
+        Label string `json:"label"`
+    } `json:"recurring_options"`
+    Available_balance struct {
+        Amount string `json:"amount"`
+        Currency string `json:"currency"`
+        Scale string `json:"scale"`
+    } `json:"available_balance"`
+    Picker_data struct {
+        Symbol string `json:"symbol"`
+        Customer_name string `json:"customer_name"`
+        Account_name string `json:"account_name"`
+        Account_number string `json:"account_number"`
+        Account_type string `json:"account_type"`
+        Institution_code string `json:"institution_code"`
+        Institution_name string `json:"institution_name"`
+        Iban string `json:"iban"`
+        Swift string `json:"swift"`
+        Paypal_email string `json:"paypal_email"`
+        Paypal_owner string `json:"paypal_owner"`
+        Routing_number string `json:"routing_name"`
+        Institution_identifier string `json:"institution_identifier"`
+        Bank_name string `json:"bank_name"`
+        Branch_name string `json:"branch_name"`
+        Icon_url string `json:"icon_url"`
+        Balance struct {
+            Amount string `json:"amount"`
+            Currency string `json:"currency"`
+        } `json:"balance"`
+    } `json:"Picker_data"`
+    Hold_business_days int64 `json:"hold_business_days"`
+    Hold_days int64 `json:"hold_days"`
+    Verificationmethod string `json:"verificationMethod"`
+    Cdvstatus string `json:"cdvStatus"`
 }
 
 type cbpFill struct { //Get all fills
@@ -794,6 +889,75 @@ func cbp_get_all_payments() []cbpPayment {
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
+
+    //debug
+    fmt.Println("Get all payment methods")
+    fmt.Println()
+    for payment := range payments {
+        fmt.Println("payments[", payment, "]")
+        fmt.Println(payments[payment].Id)
+        fmt.Println(payments[payment].Type)
+        fmt.Println(payments[payment].Name)
+        fmt.Println(payments[payment].Currency)
+        fmt.Println(payments[payment].Primary_buy)
+        fmt.Println(payments[payment].Primary_sell)
+        fmt.Println(payments[payment].Instant_buy)
+        fmt.Println(payments[payment].Instant_sell)
+        fmt.Println(payments[payment].Created_at)
+        fmt.Println(payments[payment].Updated_at)
+        fmt.Println(payments[payment].Resource)
+        fmt.Println(payments[payment].Resource_path)
+        for buy := range payments[payment].Limits.Buy {
+            fmt.Println("payments[payment].Limits.Buy[", buy, "]")
+            fmt.Println("payments[payment].Limits.Buy[", buy, "].Total")
+            fmt.Println(payments[payment].Limits.Buy[buy].Period_in_days)
+            fmt.Println(payments[payment].Limits.Buy[buy].Total.Amount)
+            fmt.Println(payments[payment].Limits.Buy[buy].Total.Currency)
+            fmt.Println("payments[payment].Limits.Buy[", buy, "].Remaining")
+            fmt.Println(payments[payment].Limits.Buy[buy].Remaining.Amount)
+            fmt.Println(payments[payment].Limits.Buy[buy].Remaining.Currency)
+        }
+        fmt.Println()
+        for instant := range payments[payment].Limits.Instant_buy {
+            fmt.Println("payments[payment].Limits.Instant_buy[", instant, "]")
+            fmt.Println("payments[payment].Limits.Instant_buy[", instant, "].Total")
+            fmt.Println(payments[payment].Limits.Instant_buy[instant].Period_in_days)
+            fmt.Println(payments[payment].Limits.Instant_buy[instant].Total.Amount)
+            fmt.Println(payments[payment].Limits.Instant_buy[instant].Total.Currency)
+            fmt.Println("payments[payment].Limits.Instant_buy[", instant, "].Remaining")
+            fmt.Println(payments[payment].Limits.Instant_buy[instant].Remaining.Amount)
+            fmt.Println(payments[payment].Limits.Instant_buy[instant].Remaining.Currency)
+        }
+        fmt.Println()
+        for sell := range payments[payment].Limits.Sell {
+            fmt.Println("payments[payment].Limits.Sell[", sell, "]")
+            fmt.Println("payments[payment].Limits.Sell[", sell, "].Total")
+            fmt.Println(payments[payment].Limits.Sell[sell].Period_in_days)
+            fmt.Println(payments[payment].Limits.Sell[sell].Total.Amount)
+            fmt.Println(payments[payment].Limits.Sell[sell].Total.Currency)
+            fmt.Println("payments[payment].Limits.Sell[", sell, "].Remaining")
+            fmt.Println(payments[payment].Limits.Sell[sell].Remaining.Amount)
+            fmt.Println(payments[payment].Limits.Sell[sell].Remaining.Currency)
+        }
+        fmt.Println()
+        for deposit := range payments[payment].Limits.Deposit {
+            fmt.Println("payments[payment].Limits.Deposit[", deposit, "]")
+            fmt.Println("payments[payment].Limits.Deposit[", deposit, "].Total")
+            fmt.Println(payments[payment].Limits.Deposit[deposit].Period_in_days)
+            fmt.Println(payments[payment].Limits.Deposit[deposit].Total.Amount)
+            fmt.Println(payments[payment].Limits.Deposit[deposit].Total.Currency)
+            fmt.Println("payments[payment].Limits.Deposit[", deposit, "].Remaining")
+            fmt.Println(payments[payment].Limits.Deposit[deposit].Remaining.Amount)
+            fmt.Println(payments[payment].Limits.Deposit[deposit].Remaining.Currency)
+        }
+
+        fmt.Println(payments[payment].Hold_business_days)
+        fmt.Println(payments[payment].Hold_days)
+        fmt.Println(payments[payment].Verificationmethod)
+        fmt.Println(payments[payment].Cdvstatus)
+        fmt.Println()
+    }
+    fmt.Println()
 
     return payments
 }
