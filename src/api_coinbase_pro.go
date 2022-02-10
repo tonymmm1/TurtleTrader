@@ -195,6 +195,22 @@ type cbpTransfer struct { //Withdraw/deposit to/from Coinbase/payment
     Subtotal string `json:"subtotal"`
 }
 
+type cbpPayment struct { //Get all payment methods
+    Id string `json:"id"`
+    Type string `json:"type"`
+    Name string `json:"name"`
+    Currency string `json:"currency"`
+    Primary_buy bool `json:"primary_buy"`
+    Primary_sell bool `json:"primary_sell"`
+    Instant_buy bool `json:"instant_buy"`
+    Instant_sell bool `json:"instant_sell"`
+    Created_at string `json:"created_at"`
+    Updated_at string `json:"updated_at'`
+    Resource string `json:"resource"`
+    Resource_path string `json:"resource_path'`
+    Verified bool `json:"verified"`
+}
+
 type cbpFill struct { //Get all fills
     Trade_id int32 `json:"id"`
     Product_id string `json:"product_id"`
@@ -761,6 +777,25 @@ func cbp_transfer_payment_account(profile_id string, amount string, account_id s
     fmt.Println(deposit.Subtotal)
 
     return deposit
+}
+
+func cbp_get_all_payments() []cbpPayment {
+    path := "/payment-methods"
+
+    var payments []cbpPayment
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &payments); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    return payments
 }
 
 func cbp_get_fees() cbpFee {
