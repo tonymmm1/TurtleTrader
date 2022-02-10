@@ -1030,6 +1030,43 @@ func cbp_get_fees() cbpFee {
     return fees
 }
 
+func cbp_get_transfer(transfer_id string) cbpPastTransfer {
+    path := "/transfers/" + transfer_id
+
+    var transfer cbpPastTransfer
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &transfer); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get a single transfer", transfer_id)
+    fmt.Println()
+    fmt.Println(transfer.Id)
+    fmt.Println(transfer.Type)
+    fmt.Println(transfer.Created_at)
+    fmt.Println(transfer.Completed_at)
+    fmt.Println(transfer.Canceled_at)
+    fmt.Println(transfer.Processed_at)
+    fmt.Println(transfer.Account_id)
+    fmt.Println(transfer.User_id)
+    fmt.Println(transfer.Amount)
+    for k, v := range transfer.Details {
+        fmt.Println(k, ":", v)
+    }
+    fmt.Println(transfer.User_nonce)
+    fmt.Println()
+
+    return transfer
+}
+
 func cbp_get_all_fills(order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []cbpFill {
     path := "/fills"
 
