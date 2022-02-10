@@ -57,10 +57,12 @@ type cbpPastTransfer struct { //struct to store API past transfer
     Completed_at string `json:"completed_at"`
     Canceled_at string `json:"canceled_at"`
     Processed_at string `json:"processed_at"`
-    User_nonce string `json:"user_nonce"`
+    Account_id string `json:"account_id"`
+    User_id string `json:"user_id"`
     Amount string `json:"amount"`
-    Details map[string] interface {} `json:"details"`
     Idem string `json:"idem"`
+    Details map[string] interface {} `json:"details"`
+    User_nonce string `json:"user_nonce"`
 }
 
 type cbpWallet struct { //struct to store API wallet
@@ -960,6 +962,46 @@ func cbp_get_all_payments() []cbpPayment {
     fmt.Println()
 
     return payments
+}
+
+func cbp_get_all_transfers() []cbpPastTransfer {
+    path := "/transfers"
+
+    var transfers []cbpPastTransfer
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &transfers); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get all transfers")
+    fmt.Println()
+    for transfer := range transfers {
+        fmt.Println("transfers[", transfer, "]")
+        fmt.Println(transfers[transfer].Id)
+        fmt.Println(transfers[transfer].Type)
+        fmt.Println(transfers[transfer].Created_at)
+        fmt.Println(transfers[transfer].Completed_at)
+        fmt.Println(transfers[transfer].Canceled_at)
+        fmt.Println(transfers[transfer].Processed_at)
+        fmt.Println(transfers[transfer].Account_id)
+        fmt.Println(transfers[transfer].User_id)
+        fmt.Println(transfers[transfer].Amount)
+        for k, v := range transfers[transfer].Details {
+            fmt.Println(k, ":", v)
+        }
+        fmt.Println(transfers[transfer].User_nonce)
+        fmt.Println()
+    }
+
+    return transfers
 }
 
 func cbp_get_fees() cbpFee {
