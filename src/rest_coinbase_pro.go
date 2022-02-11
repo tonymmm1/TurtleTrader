@@ -12,8 +12,8 @@ import (
         "github.com/go-resty/resty/v2"
 )
 
-func cbp_generate_message(time string, method string, path string) string { //generate hashed message for REST requests
-    message := time + method + path //construct prehase message
+func cbp_generate_message(time string, method string, path string, body string) string { //generate hashed message for REST requests
+    message := time + method + path + body //construct prehase message
 
     decoded, err := base64.StdEncoding.DecodeString(cbpKey.Secret) //decode base64 encoded api secret
     if err != nil {
@@ -30,7 +30,7 @@ func cbp_generate_message(time string, method string, path string) string { //ge
 func cbp_rest_get(path string) (int, []byte) { //handles GET requests
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message := cbp_generate_message(time, "GET", path) //create hashed message to send
+    message := cbp_generate_message(time, "GET", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
@@ -61,7 +61,7 @@ func cbp_rest_get(path string) (int, []byte) { //handles GET requests
 func cbp_rest_get_fills(path string, order_id string, product_id string, profile_id string, limit int64, before int64, after int64) (int, []byte) { //handles GET requests
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message := cbp_generate_message(time, "GET", path) //create hashed message to send
+    message := cbp_generate_message(time, "GET", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
@@ -99,7 +99,7 @@ func cbp_rest_get_fills(path string, order_id string, product_id string, profile
 func cbp_rest_get_profiles(path string, active bool) (int, []byte) {
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message := cbp_generate_message(time, "GET", path) //create hashed message to send
+    message := cbp_generate_message(time, "GET", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
@@ -132,7 +132,7 @@ func cbp_rest_get_profiles(path string, active bool) (int, []byte) {
 func cbp_rest_post_address(path string) (int, []byte) { //POST_REQUEST_GENERATE_ADDRESS
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message := cbp_generate_message(time, "POST", path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
@@ -163,7 +163,7 @@ func cbp_rest_post_address(path string) (int, []byte) { //POST_REQUEST_GENERATE_
 func cbp_rest_post_convert(path string, profile_id string, from string, to string, amount string, nonce string) (int, []byte) { //POST_REQUEST_CONVERT_CURRENCY
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message := cbp_generate_message(time, "POST", path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
@@ -200,7 +200,7 @@ func cbp_rest_post_convert(path string, profile_id string, from string, to strin
 func cbp_rest_get_convert(path string, profile_id string) (int, []byte) {
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message := cbp_generate_message(time, "POST", path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
@@ -233,7 +233,7 @@ func cbp_rest_get_convert(path string, profile_id string) (int, []byte) {
 func cbp_rest_post_coinbase(path string, profile_id string, amount string, coinbase_account_id string, currency string) (int, []byte) { //POST_REQUEST_WITHDRAW/DEPOSIT
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message := cbp_generate_message(time, "POST", path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
@@ -269,7 +269,7 @@ func cbp_rest_post_coinbase(path string, profile_id string, amount string, coinb
 func cbp_rest_post_payment(path string, profile_id string, amount string, payment_method_id string, currency string) (int, []byte) { //POST_REQUEST_(WITHDRAW/DEPOSIT)_PAYMENT
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 
-    message := cbp_generate_message(time, "POST", path) //create hashed message to send
+    message := cbp_generate_message(time, "POST", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
     resp, err := client.R().
