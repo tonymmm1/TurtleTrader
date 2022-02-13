@@ -143,6 +143,7 @@ type cbpCryptoAddress struct { //struct to store API generated crypto address
         Details string `json:"details"`
         Image_url string `json:"image_url"`
     } `json:"warnings"`
+    Exchange_deposit_address bool `json:"exchange_deposit_address"`
     //Legacy_address string `json:"legacy_address"`
     //Destination_tag string `json:"destination_tag"`
     //Deposit_uri string `json:"deposity_uri"`
@@ -639,6 +640,7 @@ func cbp_generate_crypto_address(account_id string) cbpCryptoAddress { //Generat
             fmt.Println(address.Warnings[warning].Image_url)
         }
     }
+    fmt.Println(address.Exchange_deposit_address)
     /*if address.Legacy_address != "" {
         fmt.Println(address.Legacy_address)
     }
@@ -1065,6 +1067,32 @@ func cbp_get_transfer(transfer_id string) cbpPastTransfer {
     fmt.Println()
 
     return transfer
+}
+
+func cbp_get_fee_estimate(currency string, crypto_address string) float64 {
+    path := "/withdrawals/fee-estimate"
+    
+    var fee struct {
+        Fee float64 `json:"fee"`
+    }
+
+    response_status, response_body := cbp_rest_get_fee_estimate(path, currency, crypto_address)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &fee); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println(err)
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get fee estimate for crypto withdrawal")
+    fmt.Println(fee.Fee)
+
+    return fee.Fee
 }
 
 func cbp_get_all_fills(order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []cbpFill {
