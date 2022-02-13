@@ -365,6 +365,24 @@ type cbpTradingPair struct {
     Auction_mode bool `json:"auction_mode"`
 }
 
+type cbpProductBook struct {
+    Bids []interface{} `json:"bids"`
+    Asks []interface{} `json:"asks"`
+    Sequence float64 `json:"sequence"`
+    Auction_mode bool `json:"auction_mode"`
+    Auction struct {
+        Open_price string `json:"open_price"`
+        Open_size string `json:"open_size"`
+        Best_bid_price string `json:"best_bid_price"`
+        Best_bid_size string `json:"best_bid_size"`
+        Best_ask_price string `json:"best_ask_price"`
+        Best_ask_size string `json:"best_ask_size"`
+        Auction_state string `json:"auction_state"`
+        Can_open string `json:"can_open"`
+        Time string `json:"time"`
+    } `json:"auction"`
+}
+
 /*  Accounts
 *       Get all accounts for a profile      (GET)
 *       Get a single account by id          (GET)
@@ -1340,6 +1358,51 @@ func cbp_get_product(product_id string) cbpTradingPair {
     fmt.Println()
 
     return product
+}
+
+func cbp_get_product_book(product_id string, level int32) cbpProductBook {
+    path := "/products/" + product_id + "/book"
+
+    var book cbpProductBook
+
+    response_status, response_body := cbp_rest_get_product_book(path, level)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &book); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get product book")
+    fmt.Println()
+
+    for k, v := range book.Bids {
+        fmt.Println("book.Bids[", k, "]")
+        fmt.Println(k, ":", v)
+        fmt.Println()
+    }
+    for k, v := range book.Asks {
+        fmt.Println("book.Asks[", k, "]")
+        fmt.Println(k, ":", v)
+        fmt.Println()
+    }
+    fmt.Println()
+    fmt.Println(book.Sequence)
+    fmt.Println(book.Auction_mode)
+    fmt.Println(book.Auction.Open_price)
+    fmt.Println(book.Auction.Best_bid_price)
+    fmt.Println(book.Auction.Best_bid_size)
+    fmt.Println(book.Auction.Best_ask_price)
+    fmt.Println(book.Auction.Best_ask_size)
+    fmt.Println(book.Auction.Auction_state)
+    fmt.Println(book.Auction.Can_open)
+    fmt.Println(book.Auction.Time)
+
+    return book
 }
 
 /*  Profiles
