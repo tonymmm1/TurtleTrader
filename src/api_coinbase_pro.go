@@ -342,6 +342,37 @@ type cbpPrice struct { //Get signed prices
     Prices map[string] interface {} `json:"prices"`
 }
 
+type cbpTradingPair struct {
+    Id string `json:"id"`
+    Base_currency string `json:"base_currency"`
+    Quote_currency string `json:"quote_currency"`
+    Base_min_size string `json:"base_min_size"`
+    Base_max_size string `json:"base_max_size"`
+    Quote_increment string `json:"quote_increment"`
+    Base_increment string `json:"base_increment"`
+    Display_name string `json:"display_name"`
+    Min_market_funds string `json:"min_market_funds"`
+    Max_market_funds string `json:"max_market_funds"`
+    Margin_enabled bool `json:"margin_enabled"`
+    Post_only bool `json:"post_only"`
+    Limit_only bool `json:limit_only"`
+    Cancel_only bool `json:"cancel_only"`
+    Status string `json:"status"`
+    Status_message string `json:"status_message"`
+    Trading_disabled bool `json:"trading_disabled"`
+    Fx_stablecoin bool `json:"fx_stablecoin"`
+    Max_slippage_percentage string `json:"max_slippage_percentage"`
+    Auction_mode bool `json:"auction_mode"`
+}
+
+/*  Accounts
+*       Get all accounts for a profile      (GET)
+*       Get a single account by id          (GET)
+*       Get a single account's holds        (GET)
+*       Get a single account's ledger       (GET)
+*       Get a single account's transfers    (GET)
+*/
+
 func cbp_get_all_accounts() []cbpAccount { //Get a list of trading accounts from the profile of the API key.
     path := "/accounts"
 
@@ -440,7 +471,7 @@ func cbp_get_single_account_holds(account_id string) []cbpHold { //List the hold
     return holds
 }
 
-func cbp_get_single_account_ledgers(account_id string) []cbpLedger { //List the holds of an account that belong to the same profile as the API key.
+func cbp_get_single_account_ledger(account_id string) []cbpLedger { //List the holds of an account that belong to the same profile as the API key.
     path := "/accounts/" + account_id + "/ledger" //?limit=100" //implement limit logic later
 
     var ledgers []cbpLedger
@@ -508,6 +539,11 @@ func cbp_get_single_account_transfers(account_id string) []cbpPastTransfer { //L
 
     return transfers 
 }
+
+/*  Coinbase accounts
+*       Get all Coinbase wallets    (GET)
+*       Generate crypto address     (POST)
+*/
 
 func cbp_get_all_wallets() []cbpWallet { //Gets all the user's available Coinbase wallets
     path := "/coinbase-accounts"
@@ -658,6 +694,72 @@ func cbp_generate_crypto_address(account_id string) cbpCryptoAddress { //Generat
     return address
 }
 
+/*  Conversions
+*       Convert currency    (POST)
+*       Get a conversion    (GET)
+*/
+
+func cbp_convert_currency(profile_id string, from string, to string, amount string, nonce string) cbpConvert { //Converts funds from currency to currency
+    path := "/conversions"
+
+    var convert cbpConvert
+
+    response_status, response_body := cbp_rest_post_convert(path, profile_id, from, to, amount, nonce)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &convert); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Convert currency")
+    fmt.Println(convert.Id)
+    fmt.Println(convert.Amount)
+    fmt.Println(convert.From_account_id)
+    fmt.Println(convert.To_account_id)
+    fmt.Println(convert.From)
+    fmt.Println(convert.To)
+
+    return convert
+}
+
+func cbp_get_conversion(conversion_id string, profile_id string) cbpConvert{
+    path := "/conversion/" + conversion_id
+
+    var convert cbpConvert
+
+    response_status, response_body := cbp_rest_get_convert(path, profile_id)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &convert); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get a conversion")
+    fmt.Println(convert.Id)
+    fmt.Println(convert.Amount)
+    fmt.Println(convert.From_account_id)
+    fmt.Println(convert.To_account_id)
+    fmt.Println(convert.From)
+    fmt.Println(convert.To)
+
+    return convert
+}
+
+/*  Currencies
+*       Get all known currencies    (GET)
+*       Get a currency              (GET)
+*/
+
 func cbp_get_all_currencies() []cbpCurrency {
     path := "/currencies"
 
@@ -766,61 +868,13 @@ func cbp_get_currency(currency_id string) cbpCurrency {
     return currency
 }
 
-func cbp_convert_currency(profile_id string, from string, to string, amount string, nonce string) cbpConvert { //Converts funs from currency to currency
-    path := "/conversions"
-
-    var convert cbpConvert
-
-    response_status, response_body := cbp_rest_post_convert(path, profile_id, from, to, amount, nonce)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
-        os.Exit(1)
-    }
-
-    if err := json.Unmarshal(response_body, &convert); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Convert currency")
-    fmt.Println(convert.Id)
-    fmt.Println(convert.Amount)
-    fmt.Println(convert.From_account_id)
-    fmt.Println(convert.To_account_id)
-    fmt.Println(convert.From)
-    fmt.Println(convert.To)
-
-    return convert
-}
-
-func cbp_get_conversion(conversion_id string, profile_id string) cbpConvert{
-    path := "/conversion/" + conversion_id
-
-    var convert cbpConvert
-
-    response_status, response_body := cbp_rest_get_convert(path, profile_id)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
-        os.Exit(1)
-    }
-
-    if err := json.Unmarshal(response_body, &convert); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get a conversion")
-    fmt.Println(convert.Id)
-    fmt.Println(convert.Amount)
-    fmt.Println(convert.From_account_id)
-    fmt.Println(convert.To_account_id)
-    fmt.Println(convert.From)
-    fmt.Println(convert.To)
-
-    return convert
-}
+/*  Transfers
+*       Deposit/Withdraw to/from Coinbase/payment   (POST)
+*       Get all payment methods                     (GET)
+*       Get all transfers                           (GET)
+*       Get a single transfer                       (GET)
+*       Get fee estimate for crypto withdrawal      (GET)
+*/
 
 func cbp_transfer_coinbase_account(profile_id string, amount string, account_id string, currency string) cbpTransfer {
     path := "/deposits/coinbase-account"
@@ -1006,32 +1060,6 @@ func cbp_get_all_transfers() []cbpPastTransfer {
     return transfers
 }
 
-func cbp_get_fees() cbpFee {
-    path := "/fees"
-
-    var fees cbpFee
-
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
-        os.Exit(1)
-    }
-
-    if err := json.Unmarshal(response_body, &fees); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("fees:")
-    fmt.Println(fees.Taker_fee_rate)
-    fmt.Println(fees.Maker_fee_rate)
-    fmt.Println(fees.Usd_volume)
-    fmt.Println()
-
-    return fees
-}
-
 func cbp_get_transfer(transfer_id string) cbpPastTransfer {
     path := "/transfers/" + transfer_id
 
@@ -1083,7 +1111,6 @@ func cbp_get_fee_estimate(currency string, crypto_address string) float64 {
     }
 
     if err := json.Unmarshal(response_body, &fee); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println(err)
         fmt.Println("ERROR decoding REST response")
         os.Exit(1)
     }
@@ -1094,6 +1121,45 @@ func cbp_get_fee_estimate(currency string, crypto_address string) float64 {
 
     return fee.Fee
 }
+
+/*  Fees
+*       Get fees    (GET)
+*/
+
+func cbp_get_fees() cbpFee {
+    path := "/fees"
+
+    var fees cbpFee
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &fees); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("fees:")
+    fmt.Println(fees.Taker_fee_rate)
+    fmt.Println(fees.Maker_fee_rate)
+    fmt.Println(fees.Usd_volume)
+    fmt.Println()
+
+    return fees
+}
+
+/*  Orders
+*       Get all fills       (GET)
+*       Get all orders      (GET)
+*       Cancel all orders   (DELETE)
+*       Create a new order  (POST)
+*       Get single order    (GET)
+*       Cancel an order     (DELETE)
+*/
 
 func cbp_get_all_fills(order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []cbpFill {
     path := "/fills"
@@ -1131,39 +1197,9 @@ func cbp_get_all_fills(order_id string, product_id string, profile_id string, li
     return api_account_fills
 }
 
-func cbp_get_profiles(active bool) []cbpProfile{
-    path := "/profiles"
-
-    var profiles []cbpProfile
-
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
-        os.Exit(1)
-    }
-
-    if err := json.Unmarshal(response_body, &profiles); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("api_account_profiles:")
-    fmt.Println()
-    for profile := range profiles {
-        fmt.Println("profiles[", profile, "]")
-        fmt.Println(profiles[profile].Id)
-        fmt.Println(profiles[profile].User_id)
-        fmt.Println(profiles[profile].Name)
-        fmt.Println(profiles[profile].Active)
-        fmt.Println(profiles[profile].Is_default)
-        fmt.Println(profiles[profile].Has_margin)
-        fmt.Println(profiles[profile].Created_at)
-    }
-    fmt.Println()
-
-    return profiles
-}
+/*  Coinbase price oracle
+*       Get signed prices   (GET)
+*/
 
 func cbp_get_signed_prices() cbpPrice {
     path := "/oracle"
@@ -1204,3 +1240,113 @@ func cbp_get_signed_prices() cbpPrice {
 
     return prices
 }
+
+/*  Products
+*       Get all known trading pairs (GET)
+*       Get single product          (GET)
+*       Get product book            (GET)
+*       Get product candles         (GET)
+*       Get product stats           (GET)
+*       Get product ticker          (GET)
+*       Get product trades          (GET)
+*/
+
+func cbp_get_all_trading_pairs(query_type string) []cbpTradingPair {
+    path := "/products"
+    
+    var trades []cbpTradingPair
+
+    response_status, response_body := cbp_rest_get_all_trading_pairs(path, query_type)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &trades); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get all known trading pairs")
+    fmt.Println()
+    for trade := range trades {
+        fmt.Println("trades[", trade, "]")
+        fmt.Println(trades[trade].Id)
+        fmt.Println(trades[trade].Base_currency)
+        fmt.Println(trades[trade].Quote_currency)
+        fmt.Println(trades[trade].Base_min_size)
+        fmt.Println(trades[trade].Base_max_size)
+        fmt.Println(trades[trade].Quote_increment)
+        fmt.Println(trades[trade].Base_increment)
+        fmt.Println(trades[trade].Display_name)
+        fmt.Println(trades[trade].Min_market_funds)
+        fmt.Println(trades[trade].Max_market_funds)
+        fmt.Println(trades[trade].Margin_enabled)
+        fmt.Println(trades[trade].Post_only)
+        fmt.Println(trades[trade].Limit_only)
+        fmt.Println(trades[trade].Cancel_only)
+        fmt.Println(trades[trade].Status)
+        fmt.Println(trades[trade].Status_message)
+        fmt.Println(trades[trade].Trading_disabled)
+        fmt.Println(trades[trade].Fx_stablecoin)
+        fmt.Println(trades[trade].Max_slippage_percentage)
+        fmt.Println(trades[trade].Auction_mode)
+        fmt.Println()
+    }
+
+    return trades
+}
+
+/*  Profiles
+*       Get profiles                    (GET)
+*       Create a profile                (POST)
+*       Transfer funds between profiles (POST)
+*       Get profile by id               (GET)
+*       Rename a profile                (PUT)
+*       Delete a profile                (PUT)
+*/
+
+func cbp_get_profiles(active bool) []cbpProfile{
+    path := "/profiles"
+
+    var profiles []cbpProfile
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &profiles); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("api_account_profiles:")
+    fmt.Println()
+    for profile := range profiles {
+        fmt.Println("profiles[", profile, "]")
+        fmt.Println(profiles[profile].Id)
+        fmt.Println(profiles[profile].User_id)
+        fmt.Println(profiles[profile].Name)
+        fmt.Println(profiles[profile].Active)
+        fmt.Println(profiles[profile].Is_default)
+        fmt.Println(profiles[profile].Has_margin)
+        fmt.Println(profiles[profile].Created_at)
+    }
+    fmt.Println()
+
+    return profiles
+}
+
+/*  Reports
+*       Get all reports (GET)
+*       Create a report (POST)
+*       Get a report    (GET)
+*/
+
+/*  Users
+*       Get user exchange limits    (GET)    
+*/
