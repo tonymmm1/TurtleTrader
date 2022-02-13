@@ -1298,6 +1298,50 @@ func cbp_get_all_trading_pairs(query_type string) []cbpTradingPair {
     return trades
 }
 
+func cbp_get_product(product_id string) cbpTradingPair {
+    path := "/products/" + product_id
+
+    var product cbpTradingPair
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &product); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get single product: ", product_id)
+    fmt.Println()
+    fmt.Println(product.Id)
+    fmt.Println(product.Base_currency)
+    fmt.Println(product.Quote_currency)
+    fmt.Println(product.Base_min_size)
+    fmt.Println(product.Base_max_size)
+    fmt.Println(product.Quote_increment)
+    fmt.Println(product.Base_increment)
+    fmt.Println(product.Display_name)
+    fmt.Println(product.Min_market_funds)
+    fmt.Println(product.Max_market_funds)
+    fmt.Println(product.Margin_enabled)
+    fmt.Println(product.Post_only)
+    fmt.Println(product.Limit_only)
+    fmt.Println(product.Cancel_only)
+    fmt.Println(product.Status)
+    fmt.Println(product.Status_message)
+    fmt.Println(product.Trading_disabled)
+    fmt.Println(product.Fx_stablecoin)
+    fmt.Println(product.Max_slippage_percentage)
+    fmt.Println(product.Auction_mode)
+    fmt.Println()
+
+    return product
+}
+
 /*  Profiles
 *       Get profiles                    (GET)
 *       Create a profile                (POST)
