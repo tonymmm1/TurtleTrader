@@ -383,6 +383,15 @@ type cbpProductBook struct {
     } `json:"auction"`
 }
 
+type cbpProductStats struct {
+    Open string `json:"open"`
+    High string `json:"high"`
+    Low string `json:"low"`
+    Last string `json:"last"`
+    Volume string `json:"volume"`
+    Volume_30day string `json:"volume_30day"`
+}
+
 /*  Accounts
 *       Get all accounts for a profile      (GET)
 *       Get a single account by id          (GET)
@@ -1401,6 +1410,7 @@ func cbp_get_product_book(product_id string, level int32) cbpProductBook {
     fmt.Println(book.Auction.Auction_state)
     fmt.Println(book.Auction.Can_open)
     fmt.Println(book.Auction.Time)
+    fmt.Println()
 
     return book
 }
@@ -1429,6 +1439,36 @@ func cbp_get_product_candles(product_id string, granularity int32, start string,
     }
 
     return candles
+}
+
+func cbp_get_product_stats(product_id string) cbpProductStats {
+    path := "/products/" + product_id + "/stats"
+
+    var stats cbpProductStats
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &stats); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get product stats")
+    fmt.Println()
+    fmt.Println(stats.Open)
+    fmt.Println(stats.High)
+    fmt.Println(stats.Low)
+    fmt.Println(stats.Last)
+    fmt.Println(stats.Volume)
+    fmt.Println(stats.Volume_30day)
+    fmt.Println()
+
+    return stats
 }
 
 /*  Profiles
