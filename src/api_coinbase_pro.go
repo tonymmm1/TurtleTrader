@@ -1405,6 +1405,32 @@ func cbp_get_product_book(product_id string, level int32) cbpProductBook {
     return book
 }
 
+func cbp_get_product_candles(product_id string, granularity int32, start string, end string) []interface{} { //[]cbpProductCandle {
+    path := "/products/" + product_id + "/candles"
+
+    var candles []interface{}
+
+    response_status, response_body := cbp_rest_get_product_candles(path, granularity, start, end)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &candles); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get product candles")
+    fmt.Println()
+    for k, v := range candles {
+        fmt.Println(k, ":", v)
+    }
+
+    return candles
+}
+
 /*  Profiles
 *       Get profiles                    (GET)
 *       Create a profile                (POST)
