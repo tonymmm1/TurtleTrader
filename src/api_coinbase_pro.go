@@ -392,6 +392,16 @@ type cbpProductStats struct {
     Volume_30day string `json:"volume_30day"`
 }
 
+type cbpProductTicker struct {
+    Ask string `json:"ask"`
+    Bid string `json:"bid"`
+    Volume string `json:"volume"`
+    Trade_id int32 `json:"trade_id"`
+    Price string `json:"price"`
+    Size string `json:"size"`
+    Time string `json:"time"`
+}
+
 /*  Accounts
 *       Get all accounts for a profile      (GET)
 *       Get a single account by id          (GET)
@@ -1466,6 +1476,37 @@ func cbp_get_product_stats(product_id string) cbpProductStats {
     fmt.Println(stats.Last)
     fmt.Println(stats.Volume)
     fmt.Println(stats.Volume_30day)
+    fmt.Println()
+
+    return stats
+}
+
+func cbp_get_product_ticker(product_id string) cbpProductTicker {
+    path := "/products/" + product_id + "/ticker"
+
+    var stats cbpProductTicker
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &stats); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get product ticker")
+    fmt.Println()
+    fmt.Println(stats.Ask)
+    fmt.Println(stats.Bid)
+    fmt.Println(stats.Volume)
+    fmt.Println(stats.Trade_id)
+    fmt.Println(stats.Price)
+    fmt.Println(stats.Size)
+    fmt.Println(stats.Time)
     fmt.Println()
 
     return stats
