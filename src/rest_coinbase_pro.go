@@ -243,6 +243,43 @@ func cbp_rest_get_product_candles(path string, granularity int32, start string, 
     return resp.StatusCode(), resp.Body()
 }
 
+func cbp_rest_get_product_trades(path string, limit int32) (int, []byte) {
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
+
+    limit2 := strconv.FormatInt(int64(limit), 10)
+
+    path2 := path + "?limit=" + limit2
+
+    message := cbp_generate_message(time, "GET", path2, "") //create hashed message to send
+
+    client := resty.New() //create REST session
+    resp, err := client.R().
+        SetHeader("Accept", "application/json").
+        SetHeaders(map[string] string {
+            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "Content-Type" : "application/json"}).
+        SetQueryParams(map[string] string {
+            "limit" : limit2}).
+        SetAuthToken(cbpKey.Key).
+        Get(cbpKey.Host + path)
+
+    // debug
+    fmt.Println("Response Info:")
+    fmt.Println("  Error      :", err)
+    fmt.Println("  Status Code:", resp.StatusCode())
+    fmt.Println("  Status     :", resp.Status())
+    fmt.Println("  Proto      :", resp.Proto())
+    fmt.Println("  Time       :", resp.Time())
+    fmt.Println("  Received At:", resp.ReceivedAt())
+    fmt.Println("  Body       :\n", resp)
+    fmt.Println()
+
+    return resp.StatusCode(), resp.Body()
+}
+
 func cbp_rest_get_profiles(path string, active bool) (int, []byte) {
     time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
 

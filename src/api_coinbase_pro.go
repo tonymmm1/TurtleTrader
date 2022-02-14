@@ -402,6 +402,14 @@ type cbpProductTicker struct {
     Time string `json:"time"`
 }
 
+type cbpProductTrade struct {
+    Trade_id int32 `json:"trade_id"`
+    Side string `json:"side"`
+    Size string `json:"size"`
+    Price string `json:"price"`
+    Time string `json:"time"`
+}
+
 /*  Accounts
 *       Get all accounts for a profile      (GET)
 *       Get a single account by id          (GET)
@@ -1510,6 +1518,38 @@ func cbp_get_product_ticker(product_id string) cbpProductTicker {
     fmt.Println()
 
     return stats
+}
+
+func cbp_get_product_trades(product_id string, limit int32) []cbpProductTrade {
+    path := "/products/" + product_id + "/trades"
+
+    var trades []cbpProductTrade
+
+    response_status, response_body := cbp_rest_get_product_trades(path, limit)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &trades); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get product trades")
+    fmt.Println()
+    for trade := range trades {
+        fmt.Println("trades[", trade, "]")
+        fmt.Println(trades[trade].Trade_id)
+        fmt.Println(trades[trade].Side)
+        fmt.Println(trades[trade].Size)
+        fmt.Println(trades[trade].Price)
+        fmt.Println(trades[trade].Time)
+        fmt.Println()
+    }
+
+    return trades
 }
 
 /*  Profiles
