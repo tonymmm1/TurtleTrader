@@ -1605,6 +1605,37 @@ func cbp_get_profiles(active bool) []cbpProfile{
     return profiles
 }
 
+func cbp_create_profile(name string) cbpProfile {
+    path := "/profiles"
+
+    var profile cbpProfile
+
+    response_status, response_body := cbp_rest_post_create_profile(path, name)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &profile); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }    
+
+    //debug
+    fmt.Println("Create a profile")
+    fmt.Println()
+    fmt.Println(profile.Id)
+    fmt.Println(profile.User_id)
+    fmt.Println(profile.Name)
+    fmt.Println(profile.Active)
+    fmt.Println(profile.Is_default)
+    fmt.Println(profile.Has_margin)
+    fmt.Println(profile.Created_at)
+    fmt.Println()
+
+    return profile
+}
+
 /*  Reports
 *       Get all reports (GET)
 *       Create a report (POST)
