@@ -435,7 +435,7 @@ func cbp_get_all_accounts() []cbpAccount { //Get a list of trading accounts from
     }
 
     //debug
-    fmt.Println("accounts:")
+    fmt.Println("Get all accounts for a profile")
     fmt.Println()
     for account := range accounts {
         fmt.Println("accounts[", account, "]")
@@ -469,7 +469,8 @@ func cbp_get_single_account(account_id string) cbpAccount { //Information for a 
     }
 
     //debug
-    fmt.Println("account:")
+    fmt.Println("Get a single account by id")
+    fmt.Println()
     fmt.Println(account.Id)
     fmt.Println(account.Currency)
     fmt.Println(account.Balance)
@@ -502,7 +503,8 @@ func cbp_get_single_account_holds(account_id string) []cbpHold { //List the hold
     }
 
     //debug
-    fmt.Println("holds:")
+    fmt.Println("Get a single account's holds")
+    fmt.Println()
     for hold := range holds {
         fmt.Println("holds[", hold,"]")
         fmt.Println(holds[hold].Id)
@@ -533,7 +535,8 @@ func cbp_get_single_account_ledger(account_id string) []cbpLedger { //List the h
     }
 
     //debug
-    fmt.Println("account_id:", account_id)
+    fmt.Println("Get a single account's ledger")
+    fmt.Println()
     for ledger := range ledgers {
         fmt.Println(ledgers[ledger].Id)
         fmt.Println(ledgers[ledger].Amount)
@@ -566,7 +569,8 @@ func cbp_get_single_account_transfers(account_id string) []cbpPastTransfer { //L
     }
 
     //debug
-    fmt.Println("account_id:", account_id)
+    fmt.Println("Get a single account's transfers")
+    fmt.Println()
     for transfer := range transfers {
         fmt.Println(transfers[transfer].Id)
         fmt.Println(transfers[transfer].Type)
@@ -607,10 +611,9 @@ func cbp_get_all_wallets() []cbpWallet { //Gets all the user's available Coinbas
     }
 
     //debug
-    fmt.Println("api_account_wallets: ", wallets)
+    fmt.Println("Get all Coinbase wallets")
     fmt.Println()
     for wallet := range wallets {
-        fmt.Println()
         fmt.Println("wallets[", wallet, "]")
         fmt.Println(wallets[wallet].Id)
         fmt.Println(wallets[wallet].Name)
@@ -670,8 +673,8 @@ func cbp_get_all_wallets() []cbpWallet { //Gets all the user's available Coinbas
         }*/
         fmt.Println(wallets[wallet].Hold_balance)
         fmt.Println(wallets[wallet].Hold_currency)
+        fmt.Println()
     }
-    fmt.Println()
     
     return wallets
 }
@@ -693,7 +696,7 @@ func cbp_generate_crypto_address(account_id string) cbpCryptoAddress { //Generat
     }
 
     //debug
-    fmt.Println("address:", account_id)
+    fmt.Println("Generate crypto address")
     fmt.Println()
     fmt.Println(address.Id)
     fmt.Println(address.Address)
@@ -762,6 +765,7 @@ func cbp_convert_currency(profile_id string, from string, to string, amount stri
 
     //debug
     fmt.Println("Convert currency")
+    fmt.Println()
     fmt.Println(convert.Id)
     fmt.Println(convert.Amount)
     fmt.Println(convert.From_account_id)
@@ -790,6 +794,7 @@ func cbp_get_conversion(conversion_id string, profile_id string) cbpConvert{
 
     //debug
     fmt.Println("Get a conversion")
+    fmt.Println()
     fmt.Println(convert.Id)
     fmt.Println(convert.Amount)
     fmt.Println(convert.From_account_id)
@@ -939,12 +944,14 @@ func cbp_transfer_coinbase_account(profile_id string, amount string, account_id 
 
     //debug
     fmt.Println("Deposit/Withdraw to/from Coinbase account")
+    fmt.Println()
     fmt.Println(deposit.Id)
     fmt.Println(deposit.Amount)
     fmt.Println(deposit.Currency)
     fmt.Println(deposit.Payout_at)
     fmt.Println(deposit.Fee)
     fmt.Println(deposit.Subtotal)
+    fmt.Println()
 
     return deposit
 }
@@ -967,12 +974,14 @@ func cbp_transfer_payment_account(profile_id string, amount string, account_id s
 
     //debug
     fmt.Println("Deposit/Withdraw to/from Coinbase account")
+    fmt.Println()
     fmt.Println(deposit.Id)
     fmt.Println(deposit.Amount)
     fmt.Println(deposit.Currency)
     fmt.Println(deposit.Payout_at)
     fmt.Println(deposit.Fee)
     fmt.Println(deposit.Subtotal)
+    fmt.Println()
 
     return deposit
 }
@@ -1060,7 +1069,6 @@ func cbp_get_all_payments() []cbpPayment {
         fmt.Println(payments[payment].Cdvstatus)
         fmt.Println()
     }
-    fmt.Println()
 
     return payments
 }
@@ -1163,6 +1171,7 @@ func cbp_get_fee_estimate(currency string, crypto_address string) float64 {
     //debug
     fmt.Println("Get fee estimate for crypto withdrawal")
     fmt.Println(fee.Fee)
+    fmt.Println()
 
     return fee.Fee
 }
@@ -1188,7 +1197,8 @@ func cbp_get_fees() cbpFee {
     }
 
     //debug
-    fmt.Println("fees:")
+    fmt.Println("Get fees")
+    fmt.Println()
     fmt.Println(fees.Taker_fee_rate)
     fmt.Println(fees.Maker_fee_rate)
     fmt.Println(fees.Usd_volume)
@@ -1223,7 +1233,7 @@ func cbp_get_all_fills(order_id string, product_id string, profile_id string, li
     }
 
     //debug
-    fmt.Println("api_account_fills:")
+    fmt.Println("Get all fills")
     fmt.Println()
     for fill := range api_account_fills {
         fmt.Println("api_account_fills[", fill, "]")
@@ -1236,8 +1246,8 @@ func cbp_get_all_fills(order_id string, product_id string, profile_id string, li
         fmt.Println(api_account_fills[fill].Price)
         fmt.Println(api_account_fills[fill].Size)
         fmt.Println(api_account_fills[fill].Fee)
+        fmt.Println()
     }
-    fmt.Println()
 
     return api_account_fills
 }
@@ -1263,7 +1273,7 @@ func cbp_get_signed_prices() cbpPrice {
     }
 
     //debug
-    fmt.Println("api_account_prices:")
+    fmt.Print("Get signed prices")
     fmt.Println()
     fmt.Println(prices.Timestamp)
     for message := range prices.Messages {
@@ -1360,7 +1370,7 @@ func cbp_get_product(product_id string) cbpTradingPair {
     }
 
     //debug
-    fmt.Println("Get single product: ", product_id)
+    fmt.Println("Get single product")
     fmt.Println()
     fmt.Println(product.Id)
     fmt.Println(product.Base_currency)
@@ -1578,7 +1588,7 @@ func cbp_get_profiles(active bool) []cbpProfile{
     }
 
     //debug
-    fmt.Println("api_account_profiles:")
+    fmt.Println("Get profiles")
     fmt.Println()
     for profile := range profiles {
         fmt.Println("profiles[", profile, "]")
