@@ -1571,7 +1571,7 @@ func cbp_get_product_trades(product_id string, limit int32) []cbpProductTrade {
 *       Delete a profile                (PUT)
 */
 
-func cbp_get_profiles(active bool) []cbpProfile{
+func cbp_get_profiles() []cbpProfile{
     path := "/profiles"
 
     var profiles []cbpProfile
@@ -1653,6 +1653,37 @@ func cbp_transfer_funds_profiles(from string, to string, currency string, amount
     fmt.Println("Transfer funds between profiles")
     fmt.Println()
     fmt.Println(profile)
+    fmt.Println()
+
+    return profile
+}
+
+func cbp_get_profile(profile_id string) cbpProfile {
+    path := "/profiles/" + profile_id
+
+    var profile cbpProfile
+
+    response_status, response_body := cbp_rest_get(path)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &profile); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Get profile by id")
+    fmt.Println()
+    fmt.Println(profile.Id)
+    fmt.Println(profile.User_id)
+    fmt.Println(profile.Name)
+    fmt.Println(profile.Active)
+    fmt.Println(profile.Is_default)
+    fmt.Println(profile.Has_margin)
+    fmt.Println(profile.Created_at)
     fmt.Println()
 
     return profile
