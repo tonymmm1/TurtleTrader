@@ -1636,6 +1636,28 @@ func cbp_create_profile(name string) cbpProfile {
     return profile
 }
 
+func cbp_transfer_funds_profiles(from string, to string, currency string, amount string) string {
+    path := "/profiles/transfer"
+
+    var profile string
+
+    response_status, response_body := cbp_rest_post_transfer_funds_profiles(path, from, to, currency, amount)
+    if response_status != CBP_STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    profile = string(response_body) //convert to string
+
+    //debug
+    fmt.Println("Transfer funds between profiles")
+    fmt.Println()
+    fmt.Println(profile)
+    fmt.Println()
+
+    return profile
+}
+
 /*  Reports
 *       Get all reports (GET)
 *       Create a report (POST)
