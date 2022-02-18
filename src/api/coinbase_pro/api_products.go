@@ -91,7 +91,7 @@ func Get_all_trading_pairs(query_type string) []TradingPair {
     var trades []TradingPair
 
     response_status, response_body := rest_get_all_trading_pairs(path, query_type)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -138,7 +138,7 @@ func Get_product(product_id string) TradingPair {
     var product TradingPair
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -182,7 +182,7 @@ func Get_product_book(product_id string, level int32) ProductBook {
     var book ProductBook
 
     response_status, response_body := rest_get_product_book(path, level)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -228,7 +228,7 @@ func Get_product_candles(product_id string, granularity int32, start string, end
     var candles []interface{}
 
     response_status, response_body := rest_get_product_candles(path, granularity, start, end)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -254,7 +254,7 @@ func Get_product_stats(product_id string) ProductStats {
     var stats ProductStats
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -284,7 +284,7 @@ func Get_product_ticker(product_id string) ProductTicker {
     var stats ProductTicker
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -315,7 +315,7 @@ func Get_product_trades(product_id string, limit int32) []ProductTrade {
     var trades []ProductTrade
 
     response_status, response_body := rest_get_product_trades(path, limit)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

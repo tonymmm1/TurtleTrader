@@ -63,7 +63,7 @@ func Get_all_accounts() []Account { //Get a list of trading accounts from the pr
     var accounts []Account
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -97,7 +97,7 @@ func Get_single_account(account_id string) Account { //Information for a single 
     var account Account //store single Account
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -128,7 +128,7 @@ func Get_single_account_holds(account_id string) []Hold { //List the holds of an
     var holds []Hold
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -163,7 +163,7 @@ func Get_single_account_ledger(account_id string) []Ledger { //List the holds of
     var ledgers []Ledger
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -197,7 +197,7 @@ func Get_single_account_transfers(account_id string) []PastTransfer { //Lists pa
     var transfers []PastTransfer
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

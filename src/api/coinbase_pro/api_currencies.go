@@ -42,7 +42,7 @@ func Get_all_currencies() []Currency {
     var currencies []Currency
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -97,7 +97,7 @@ func Get_currency(currency_id string) Currency {
     var currency Currency
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

@@ -141,7 +141,7 @@ func transfer_coinbase_account(profile_id string, amount string, account_id stri
     var deposit Transfer
 
     response_status, response_body := rest_post_coinbase(path, profile_id, amount, account_id, currency)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -171,7 +171,7 @@ func transfer_payment_account(profile_id string, amount string, account_id strin
     var deposit Transfer
 
     response_status, response_body := rest_post_payment(path, profile_id, amount, account_id, currency)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -201,7 +201,7 @@ func Get_all_payments() []Payment {
     var payments []Payment
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -288,7 +288,7 @@ func Get_all_transfers() []PastTransfer {
     var transfers []PastTransfer
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -328,7 +328,7 @@ func Get_transfer(transfer_id string) PastTransfer {
     var transfer PastTransfer
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -365,7 +365,7 @@ func Get_fee_estimate(currency string, crypto_address string) string {
     var fee string
 
     response_status, response_body := rest_get_fee_estimate(path, currency, crypto_address)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

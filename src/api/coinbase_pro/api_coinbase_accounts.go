@@ -103,7 +103,7 @@ func Get_all_wallets() []Wallet { //Gets all the user's available Coinbase walle
     var wallets []Wallet
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -189,7 +189,7 @@ func Generate_crypto_address(account_id string) CryptoAddress { //Generates a on
     var address CryptoAddress
 
     response_status, response_body := rest_post_address(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

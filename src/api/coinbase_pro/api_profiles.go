@@ -32,7 +32,7 @@ func Get_profiles() []Profile{
     var profiles []Profile
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -66,7 +66,7 @@ func create_profile(name string) Profile {
     var profile Profile
 
     response_status, response_body := rest_post_create_profile(path, name)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -97,7 +97,7 @@ func transfer_funds_profiles(from string, to string, currency string, amount str
     var profile string
 
     response_status, response_body := rest_post_transfer_funds_profiles(path, from, to, currency, amount)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -119,7 +119,7 @@ func Get_profile(profile_id string) Profile {
     var profile Profile
 
     response_status, response_body := rest_get(path)
-    if response_status != _STATUS_CODE_SUCCESS {
+    if response_status != STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
