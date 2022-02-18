@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpTradingPair struct {
+type TradingPair struct {
     Id string `json:"id"`
     Base_currency string `json:"base_currency"`
     Quote_currency string `json:"quote_currency"`
@@ -30,7 +30,7 @@ type cbpTradingPair struct {
     Auction_mode bool `json:"auction_mode"`
 }
 
-type cbpProductBook struct {
+type ProductBook struct {
     Bids []interface{} `json:"bids"`
     Asks []interface{} `json:"asks"`
     Sequence float64 `json:"sequence"`
@@ -48,7 +48,7 @@ type cbpProductBook struct {
     } `json:"auction"`
 }
 
-type cbpProductStats struct {
+type ProductStats struct {
     Open string `json:"open"`
     High string `json:"high"`
     Low string `json:"low"`
@@ -57,7 +57,7 @@ type cbpProductStats struct {
     Volume_30day string `json:"volume_30day"`
 }
 
-type cbpProductTicker struct {
+type ProductTicker struct {
     Ask string `json:"ask"`
     Bid string `json:"bid"`
     Volume string `json:"volume"`
@@ -67,7 +67,7 @@ type cbpProductTicker struct {
     Time string `json:"time"`
 }
 
-type cbpProductTrade struct {
+type ProductTrade struct {
     Trade_id int32 `json:"trade_id"`
     Side string `json:"side"`
     Size string `json:"size"`
@@ -85,13 +85,13 @@ type cbpProductTrade struct {
 *       Get product trades          (GET)
 */
 
-func cbp_get_all_trading_pairs(query_type string) []cbpTradingPair {
+func Get_all_trading_pairs(query_type string) []TradingPair {
     path := "/products"
 
-    var trades []cbpTradingPair
+    var trades []TradingPair
 
-    response_status, response_body := cbp_rest_get_all_trading_pairs(path, query_type)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get_all_trading_pairs(path, query_type)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -132,13 +132,13 @@ func cbp_get_all_trading_pairs(query_type string) []cbpTradingPair {
     return trades
 }
 
-func cbp_get_product(product_id string) cbpTradingPair {
+func Get_product(product_id string) TradingPair {
     path := "/products/" + product_id
 
-    var product cbpTradingPair
+    var product TradingPair
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -176,13 +176,13 @@ func cbp_get_product(product_id string) cbpTradingPair {
     return product
 }
 
-func cbp_get_product_book(product_id string, level int32) cbpProductBook {
+func Get_product_book(product_id string, level int32) ProductBook {
     path := "/products/" + product_id + "/book"
 
-    var book cbpProductBook
+    var book ProductBook
 
-    response_status, response_body := cbp_rest_get_product_book(path, level)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get_product_book(path, level)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -222,13 +222,13 @@ func cbp_get_product_book(product_id string, level int32) cbpProductBook {
     return book
 }
 
-func cbp_get_product_candles(product_id string, granularity int32, start string, end string) []interface{} { //[]cbpProductCandle {
+func Get_product_candles(product_id string, granularity int32, start string, end string) []interface{} { //[]ProductCandle {
     path := "/products/" + product_id + "/candles"
 
     var candles []interface{}
 
-    response_status, response_body := cbp_rest_get_product_candles(path, granularity, start, end)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get_product_candles(path, granularity, start, end)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -248,13 +248,13 @@ func cbp_get_product_candles(product_id string, granularity int32, start string,
     return candles
 }
 
-func cbp_get_product_stats(product_id string) cbpProductStats {
+func Get_product_stats(product_id string) ProductStats {
     path := "/products/" + product_id + "/stats"
 
-    var stats cbpProductStats
+    var stats ProductStats
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -278,13 +278,13 @@ func cbp_get_product_stats(product_id string) cbpProductStats {
     return stats
 }
 
-func cbp_get_product_ticker(product_id string) cbpProductTicker {
+func Get_product_ticker(product_id string) ProductTicker {
     path := "/products/" + product_id + "/ticker"
 
-    var stats cbpProductTicker
+    var stats ProductTicker
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -309,13 +309,13 @@ func cbp_get_product_ticker(product_id string) cbpProductTicker {
     return stats
 }
 
-func cbp_get_product_trades(product_id string, limit int32) []cbpProductTrade {
+func Get_product_trades(product_id string, limit int32) []ProductTrade {
     path := "/products/" + product_id + "/trades"
 
-    var trades []cbpProductTrade
+    var trades []ProductTrade
 
-    response_status, response_body := cbp_rest_get_product_trades(path, limit)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get_product_trades(path, limit)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

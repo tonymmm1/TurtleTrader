@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpProfile struct { //Get profiles/Create a profile/Get profile by id/Get profile by id
+type Profile struct { //Get profiles/Create a profile/Get profile by id/Get profile by id
     Id string `json:"id"`
     User_id string `json:"user_id"`
     Name string `json:"name"`
@@ -26,13 +26,13 @@ type cbpProfile struct { //Get profiles/Create a profile/Get profile by id/Get p
 *       Delete a profile                (PUT)
 */
 
-func cbp_get_profiles() []cbpProfile{
+func Get_profiles() []Profile{
     path := "/profiles"
 
-    var profiles []cbpProfile
+    var profiles []Profile
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -60,13 +60,13 @@ func cbp_get_profiles() []cbpProfile{
     return profiles
 }
 
-func cbp_create_profile(name string) cbpProfile {
+func create_profile(name string) Profile {
     path := "/profiles"
 
-    var profile cbpProfile
+    var profile Profile
 
-    response_status, response_body := cbp_rest_post_create_profile(path, name)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_post_create_profile(path, name)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -91,13 +91,13 @@ func cbp_create_profile(name string) cbpProfile {
     return profile
 }
 
-func cbp_transfer_funds_profiles(from string, to string, currency string, amount string) string {
+func transfer_funds_profiles(from string, to string, currency string, amount string) string {
     path := "/profiles/transfer"
 
     var profile string
 
-    response_status, response_body := cbp_rest_post_transfer_funds_profiles(path, from, to, currency, amount)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_post_transfer_funds_profiles(path, from, to, currency, amount)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -113,13 +113,13 @@ func cbp_transfer_funds_profiles(from string, to string, currency string, amount
     return profile
 }
 
-func cbp_get_profile(profile_id string) cbpProfile {
+func Get_profile(profile_id string) Profile {
     path := "/profiles/" + profile_id
 
-    var profile cbpProfile
+    var profile Profile
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

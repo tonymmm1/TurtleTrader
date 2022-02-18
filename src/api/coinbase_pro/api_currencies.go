@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpCurrency struct { //Get all known currency/Get a currency
+type Currency struct { //Get all known currency/Get a currency
     Id string `json:"id"`
     Name string `json:"name"`
     Min_size string `json:"min_size"`
@@ -36,13 +36,13 @@ type cbpCurrency struct { //Get all known currency/Get a currency
 *       Get a currency              (GET)
 */
 
-func cbp_get_all_currencies() []cbpCurrency {
+func Get_all_currencies() []Currency {
     path := "/currencies"
 
-    var currencies []cbpCurrency
+    var currencies []Currency
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -91,13 +91,13 @@ func cbp_get_all_currencies() []cbpCurrency {
     return currencies
 }
 
-func cbp_get_currency(currency_id string) cbpCurrency {
+func Get_currency(currency_id string) Currency {
     path := "/currencies/" + currency_id
 
-    var currency cbpCurrency
+    var currency Currency
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

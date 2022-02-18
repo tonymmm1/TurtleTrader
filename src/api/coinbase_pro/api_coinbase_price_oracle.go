@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpPrice struct { //Get signed prices
+type Price struct { //Get signed prices
     Timestamp string `json:"timestamp"`
     Messages []string `json:"messages"`
     Signatures []string `json:"signatures"`
@@ -18,13 +18,13 @@ type cbpPrice struct { //Get signed prices
 *       Get signed prices   (GET)
 */
 
-func cbp_get_signed_prices() cbpPrice {
+func Get_signed_prices() Price {
     path := "/oracle"
 
-    var prices cbpPrice
+    var prices Price
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

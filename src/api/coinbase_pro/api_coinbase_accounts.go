@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpWallet struct { //struct to store API wallet
+type Wallet struct { //struct to store API wallet
     Id string `json:"id"`
     Name string `json:"name"`
     Balance string `json:"balance"`
@@ -66,7 +66,7 @@ type cbpWallet struct { //struct to store API wallet
     Hold_currency string `json:"hold_currency"`
 }
 
-type cbpCryptoAddress struct { //struct to store API generated crypto address
+type CryptoAddress struct { //struct to store API generated crypto address
     Id string `json:"id"`
     Address string `json:"address"`
     Address_info struct {
@@ -97,13 +97,13 @@ type cbpCryptoAddress struct { //struct to store API generated crypto address
 *       Generate crypto address     (POST)
 */
 
-func cbp_get_all_wallets() []cbpWallet { //Gets all the user's available Coinbase wallets
+func Get_all_wallets() []Wallet { //Gets all the user's available Coinbase wallets
     path := "/coinbase-accounts"
 
-    var wallets []cbpWallet
+    var wallets []Wallet
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -118,6 +118,7 @@ func cbp_get_all_wallets() []cbpWallet { //Gets all the user's available Coinbas
     fmt.Println()
     for wallet := range wallets {
         fmt.Println("wallets[", wallet, "]")
+        fmt.Println()
         fmt.Println(wallets[wallet].Id)
         fmt.Println(wallets[wallet].Name)
         fmt.Println(wallets[wallet].Balance)
@@ -182,13 +183,13 @@ func cbp_get_all_wallets() []cbpWallet { //Gets all the user's available Coinbas
     return wallets
 }
 
-func cbp_generate_crypto_address(account_id string) cbpCryptoAddress { //Generates a one-time crypto address for depositing crypto.
+func Generate_crypto_address(account_id string) CryptoAddress { //Generates a one-time crypto address for depositing crypto.
     path := "/coinbase-accounts/" + account_id + "/addresses"
 
-    var address cbpCryptoAddress
+    var address CryptoAddress
 
-    response_status, response_body := cbp_rest_post_address(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_post_address(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

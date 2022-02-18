@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpTransfer struct { //Withdraw/deposit to/from Coinbase/payment
+type Transfer struct { //Withdraw/deposit to/from Coinbase/payment
     Id string `json:"id"`
     Amount string `json:"amount"`
     Currency string `json:"currency"`
@@ -16,7 +16,7 @@ type cbpTransfer struct { //Withdraw/deposit to/from Coinbase/payment
     Subtotal string `json:"subtotal"`
 }
 
-type cbpPayment struct { //Get all payment methods
+type Payment struct { //Get all payment methods
     Id string `json:"id"`
     Type string `json:"type"`
     Name string `json:"name"`
@@ -135,13 +135,13 @@ type cbpPayment struct { //Get all payment methods
 *       Get fee estimate for crypto withdrawal      (GET)
 */
 
-func cbp_transfer_coinbase_account(profile_id string, amount string, account_id string, currency string) cbpTransfer {
+func transfer_coinbase_account(profile_id string, amount string, account_id string, currency string) Transfer {
     path := "/deposits/coinbase-account"
 
-    var deposit cbpTransfer
+    var deposit Transfer
 
-    response_status, response_body := cbp_rest_post_coinbase(path, profile_id, amount, account_id, currency)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_post_coinbase(path, profile_id, amount, account_id, currency)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -165,13 +165,13 @@ func cbp_transfer_coinbase_account(profile_id string, amount string, account_id 
     return deposit
 }
 
-func cbp_transfer_payment_account(profile_id string, amount string, account_id string, currency string) cbpTransfer {
+func transfer_payment_account(profile_id string, amount string, account_id string, currency string) Transfer {
     path := "/deposits/payment-method"
 
-    var deposit cbpTransfer
+    var deposit Transfer
 
-    response_status, response_body := cbp_rest_post_payment(path, profile_id, amount, account_id, currency)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_post_payment(path, profile_id, amount, account_id, currency)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -195,13 +195,13 @@ func cbp_transfer_payment_account(profile_id string, amount string, account_id s
     return deposit
 }
 
-func cbp_get_all_payments() []cbpPayment {
+func Get_all_payments() []Payment {
     path := "/payment-methods"
 
-    var payments []cbpPayment
+    var payments []Payment
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -282,13 +282,13 @@ func cbp_get_all_payments() []cbpPayment {
     return payments
 }
 
-func cbp_get_all_transfers() []cbpPastTransfer {
+func Get_all_transfers() []PastTransfer {
     path := "/transfers"
 
-    var transfers []cbpPastTransfer
+    var transfers []PastTransfer
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -322,13 +322,13 @@ func cbp_get_all_transfers() []cbpPastTransfer {
     return transfers
 }
 
-func cbp_get_transfer(transfer_id string) cbpPastTransfer {
+func Get_transfer(transfer_id string) PastTransfer {
     path := "/transfers/" + transfer_id
 
-    var transfer cbpPastTransfer
+    var transfer PastTransfer
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -359,13 +359,13 @@ func cbp_get_transfer(transfer_id string) cbpPastTransfer {
     return transfer
 }
 
-func cbp_get_fee_estimate(currency string, crypto_address string) string {
+func Get_fee_estimate(currency string, crypto_address string) string {
     path := "/withdrawals/fee-estimate"
 
     var fee string
 
-    response_status, response_body := cbp_rest_get_fee_estimate(path, currency, crypto_address)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get_fee_estimate(path, currency, crypto_address)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

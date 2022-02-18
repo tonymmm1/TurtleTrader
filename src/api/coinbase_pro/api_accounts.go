@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpAccount struct { //Get all accounts for a profile/Get a single account by id
+type Account struct { //Get all accounts for a profile/Get a single account by id
     Id string `json:"id"`
     Currency string `json:"currency"`
     Balance string `json:"balance"`
@@ -17,7 +17,7 @@ type cbpAccount struct { //Get all accounts for a profile/Get a single account b
     Trading_enabled bool `json:"trading_enabled"`
 }
 
-type cbpLedger struct { //struct to store API ledger
+type Ledger struct { //struct to store API ledger
     Id string `json:"id"`
     Amount string `json:"amount"`
     Balance string `json:"balance"`
@@ -26,7 +26,7 @@ type cbpLedger struct { //struct to store API ledger
     Details map[string] interface {} `json:"details"`
 }
 
-type cbpHold struct { //struct to store API hold
+type Hold struct { //struct to store API hold
     Id string `json:"id"`
     Created_at string `json:"created_at"`
     Amount string `json:"amount"`
@@ -34,7 +34,7 @@ type cbpHold struct { //struct to store API hold
     Type string `json:"type"`
 }
 
-type cbpPastTransfer struct { //struct to store API past transfer
+type PastTransfer struct { //struct to store API past transfer
     Id string `json:"id"`
     Type string `json:"type"`
     Created_at string `json:"created_at"`
@@ -57,13 +57,13 @@ type cbpPastTransfer struct { //struct to store API past transfer
 *       Get a single account's transfers    (GET)
 */
 
-func cbp_get_all_accounts() []cbpAccount { //Get a list of trading accounts from the profile of the API key.
+func Get_all_accounts() []Account { //Get a list of trading accounts from the profile of the API key.
     path := "/accounts"
 
-    var accounts []cbpAccount
+    var accounts []Account
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -91,13 +91,13 @@ func cbp_get_all_accounts() []cbpAccount { //Get a list of trading accounts from
     return accounts
 }
 
-func cbp_get_single_account(account_id string) cbpAccount { //Information for a single account.
+func Get_single_account(account_id string) Account { //Information for a single account.
     path := "/accounts/" + account_id
 
-    var account cbpAccount //store single cbpAccount
+    var account Account //store single Account
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -122,13 +122,13 @@ func cbp_get_single_account(account_id string) cbpAccount { //Information for a 
     return account
 }
 
-func cbp_get_single_account_holds(account_id string) []cbpHold { //List the holds of an account that belong to the same profile as the API key.
+func Get_single_account_holds(account_id string) []Hold { //List the holds of an account that belong to the same profile as the API key.
     path := "/accounts/" + account_id + "/holds" //?limit=100" //implement limit logic later
 
-    var holds []cbpHold
+    var holds []Hold
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -157,13 +157,13 @@ func cbp_get_single_account_holds(account_id string) []cbpHold { //List the hold
     return holds
 }
 
-func cbp_get_single_account_ledger(account_id string) []cbpLedger { //List the holds of an account that belong to the same profile as the API key.
+func Get_single_account_ledger(account_id string) []Ledger { //List the holds of an account that belong to the same profile as the API key.
     path := "/accounts/" + account_id + "/ledger" //?limit=100" //implement limit logic later
 
-    var ledgers []cbpLedger
+    var ledgers []Ledger
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
@@ -191,13 +191,13 @@ func cbp_get_single_account_ledger(account_id string) []cbpLedger { //List the h
     return ledgers
 }
 
-func cbp_get_single_account_transfers(account_id string) []cbpPastTransfer { //Lists past withdrawals and deposits for an account.
+func Get_single_account_transfers(account_id string) []PastTransfer { //Lists past withdrawals and deposits for an account.
     path := "/accounts/" + account_id + "/transfers" //?limit=100" //implement limit logic later
 
-    var transfers []cbpPastTransfer
+    var transfers []PastTransfer
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

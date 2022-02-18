@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpFill struct { //Get all fills
+type Fill struct { //Get all fills
     Trade_id int32 `json:"id"`
     Product_id string `json:"product_id"`
     Order_id string `json:"order_id"`
@@ -32,13 +32,13 @@ type cbpFill struct { //Get all fills
 *       Cancel an order     (DELETE)
 */
 
-func cbp_get_all_fills(order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []cbpFill {
+func Get_all_fills(order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []Fill {
     path := "/fills"
 
-    var api_account_fills []cbpFill
+    var api_account_fills []Fill
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }

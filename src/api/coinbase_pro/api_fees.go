@@ -7,7 +7,7 @@ import (
     "os"
 )
 
-type cbpFee struct { //Get fees
+type Fee struct { //Get fees
     Taker_fee_rate string `json:"taker_fee_rate"`
     Maker_fee_rate string `json:"maker_fee_rate"`
     Usd_volume string `json:"usd_volume"`
@@ -17,13 +17,13 @@ type cbpFee struct { //Get fees
 *       Get fees    (GET)
 */
 
-func cbp_get_fees() cbpFee {
+func Get_fees() Fee {
     path := "/fees"
 
-    var fees cbpFee
+    var fees Fee
 
-    response_status, response_body := cbp_rest_get(path)
-    if response_status != CBP_STATUS_CODE_SUCCESS {
+    response_status, response_body := rest_get(path)
+    if response_status != _STATUS_CODE_SUCCESS {
         fmt.Println("ERROR REST GET status code: ", response_status)
         os.Exit(1)
     }
