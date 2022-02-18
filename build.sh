@@ -1,3 +1,3 @@
-#!/bin/bash
+#!/bin/sh
 
-go build -o turtle src/cmd/turtle.go
+go build -ldflags "-s -w" -o turtle src/cmd/turtle.go
