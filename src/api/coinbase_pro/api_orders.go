@@ -67,3 +67,8 @@ func Get_all_fills(order_id string, product_id string, profile_id string, limit 
 
     return api_account_fills
 }
+
+func Create_new_order(profile_id string, query_type string, side string, product_id string, stp string, stop string, stop_price string, 
+    price string, size string, funds string, time_in_force string, cancel_after string, post_only bool, client_oid string) {
+
+}

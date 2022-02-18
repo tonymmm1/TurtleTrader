@@ -3,8 +3,8 @@ package main
 import (
         "fmt"
         
-        "crypto-bot/src/config"
-        //cbp "crypto-bot/src/api/coinbase_pro"
+        "turtle/src/config"
+        //cbp "turtle/src/api/coinbase_pro"
 )
 
 type CbpConfig struct { //Coinbase Pro configuration

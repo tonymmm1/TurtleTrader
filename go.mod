@@ -1,4 +1,4 @@
-module crypto-bot
+module turtle
 
 go 1.16
 

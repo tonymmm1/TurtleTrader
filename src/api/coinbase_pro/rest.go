@@ -10,7 +10,7 @@ import (
         "strconv"
         "time"
 
-        "crypto-bot/src/config"
+        "turtle/src/config"
 
         "github.com/go-resty/resty/v2"
 )
