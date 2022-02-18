@@ -1,4 +1,4 @@
-package main
+package coinbase_pro
 
 import (
         "crypto/hmac"
@@ -15,7 +15,7 @@ import (
 func cbp_generate_message(time string, method string, path string, body string) string { //generate hashed message for REST requests
     message := time + method + path + body //construct prehase message
 
-    decoded, err := base64.StdEncoding.DecodeString(cbpKey.Secret) //decode base64 encoded api secret
+    decoded, err := base64.StdEncoding.DecodeString(CbpKey.Secret) //decode base64 encoded api secret
     if err != nil {
         fmt.Println("ERROR decoding api key secret")
         os.Exit(1)
@@ -36,13 +36,13 @@ func cbp_rest_get(path string) (int, []byte) { //handles GET requests
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
-        SetAuthToken(cbpKey.Key).
-        Get(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Get(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -69,16 +69,16 @@ func cbp_rest_get_fee_estimate(path string, currency string, crypto_address stri
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
             "currency" : currency,
             "crypto_address" : crypto_address}).
-        SetAuthToken(cbpKey.Key).
-        Get(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Get(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -103,10 +103,10 @@ func cbp_rest_get_fills(path string, order_id string, product_id string, profile
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
             "order_id" : order_id,
@@ -115,8 +115,8 @@ func cbp_rest_get_fills(path string, order_id string, product_id string, profile
             "limit" : strconv.FormatInt(limit, 10),
             "before" : strconv.FormatInt(before, 10),
             "after" : strconv.FormatInt(after, 10)}).
-        SetAuthToken(cbpKey.Key).
-        Get(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Get(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -143,15 +143,15 @@ func cbp_rest_get_all_trading_pairs(path string, query_type string) (int, []byte
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
             "type" : query_type}).
-        SetAuthToken(cbpKey.Key).
-        Get(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Get(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -180,15 +180,15 @@ func cbp_rest_get_product_book(path string, level int32) (int, []byte) {
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
             "level" : level2}).
-        SetAuthToken(cbpKey.Key).
-        Get(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Get(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -217,17 +217,17 @@ func cbp_rest_get_product_candles(path string, granularity int32, start string, 
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
             "granularity" : granularity2,
             "start" : start,
             "end" : end}).
-        SetAuthToken(cbpKey.Key).
-        Get(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Get(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -256,15 +256,15 @@ func cbp_rest_get_product_trades(path string, limit int32) (int, []byte) {
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
             "limit" : limit2}).
-        SetAuthToken(cbpKey.Key).
-        Get(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Get(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -289,15 +289,15 @@ func cbp_rest_get_profiles(path string, active bool) (int, []byte) {
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetQueryParams(map[string] string {
             "active" : strconv.FormatBool(active)}).
-        SetAuthToken(cbpKey.Key).
-        Get(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Get(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -323,16 +323,16 @@ func cbp_rest_post_create_profile(path string, name string) (int, []byte) {
     client := resty.New() //create REST session
     resp, err := client.R().
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Accept" : "application/json",
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
             "name" : name}).
-        SetAuthToken(cbpKey.Key).
-        Post(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Post(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -361,10 +361,10 @@ func cbp_rest_post_transfer_funds_profiles(path string, from string, to string, 
     client := resty.New() //create REST session
     resp, err := client.R().
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Accept" : "application/json",
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
@@ -372,8 +372,8 @@ func cbp_rest_post_transfer_funds_profiles(path string, from string, to string, 
             "to" : to,
             "currency" : currency,
             "amount" : amount}).
-        SetAuthToken(cbpKey.Key).
-        Post(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Post(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -398,13 +398,13 @@ func cbp_rest_post_address(path string) (int, []byte) { //POST_REQUEST_GENERATE_
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
-        SetAuthToken(cbpKey.Key).
-        Post(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Post(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -429,10 +429,10 @@ func cbp_rest_post_convert(path string, profile_id string, from string, to strin
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
             "profile_id" : profile_id,
@@ -440,8 +440,8 @@ func cbp_rest_post_convert(path string, profile_id string, from string, to strin
             "to" : to,
             "amount" : amount,
             "nonce" : nonce}).
-        SetAuthToken(cbpKey.Key).
-        Post(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Post(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -466,15 +466,15 @@ func cbp_rest_get_convert(path string, profile_id string) (int, []byte) {
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
             "profile_id" : profile_id}).
-        SetAuthToken(cbpKey.Key).
-        Post(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Post(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -499,18 +499,18 @@ func cbp_rest_post_coinbase(path string, profile_id string, amount string, coinb
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
             "profile_id" : profile_id,
             "amount" : amount,
             "coinbase_account_id" : coinbase_account_id,
             "currency" : currency}).
-        SetAuthToken(cbpKey.Key).
-        Post(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Post(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")
@@ -535,18 +535,18 @@ func cbp_rest_post_payment(path string, profile_id string, amount string, paymen
     resp, err := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
-            "CB-ACCESS-KEY" : cbpKey.Key,
+            "CB-ACCESS-KEY" : CbpKey.Key,
             "CB-ACCESS-SIGN" : message,
             "CB-ACCESS-TIMESTAMP" : time,
-            "CB-ACCESS-PASSPHRASE" : cbpKey.Password,
+            "CB-ACCESS-PASSPHRASE" : CbpKey.Password,
             "Content-Type" : "application/json"}).
         SetBody(map[string] string {
             "profile_id" : profile_id,
             "amount" : amount,
             "payment_method_id" : payment_method_id,
             "currency" : currency}).
-        SetAuthToken(cbpKey.Key).
-        Post(cbpKey.Host + path)
+        SetAuthToken(CbpKey.Key).
+        Post(CbpKey.Host + path)
 
     // debug
     fmt.Println("Response Info:")

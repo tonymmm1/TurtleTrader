@@ -4,10 +4,19 @@ import (
         "fmt"
         "os"
 
+        "crypto-bot/src/api/coinbase_pro"
+
         "github.com/BurntSushi/toml"
 )
 
-var cbpKey cbpConfig //global struct that stores Coinbase Pro credentials
+type cbpConfig struct { //Coinbase Pro configuration
+    Host string
+    Key string
+    Password string
+    Secret string
+}
+
+var CbpKey cbpConfig
 
 func main() {
     f := "api.toml" //default configuration file
@@ -16,7 +25,7 @@ func main() {
         os.Exit(1)
     }
 
-    if _, err := toml.DecodeFile(f, &cbpKey); err != nil { //decode TOML file
+    if _, err := toml.DecodeFile(f, &CbpKey); err != nil { //decode TOML file
         fmt.Println("ERROR decoding toml configuration")
         os.Exit(1)
     }
