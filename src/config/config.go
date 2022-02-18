@@ -10,7 +10,7 @@ import (
 
 var CBP Coinbase_pro
 
-func Parser() {
+func Load() {
     file := "api.toml" //default configuration file
     if _, err := os.Stat(file); err != nil { //check configuration file exists
         fmt.Println("ERROR " + file + " does not exist")
