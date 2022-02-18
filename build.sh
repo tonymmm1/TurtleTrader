@@ -1,3 +1,3 @@
 #!/bin/bash
 
-go build -o crypto-bot src/*.go
+go build -o turtle src/cmd/turtle.go

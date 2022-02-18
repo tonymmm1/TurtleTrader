@@ -21,7 +21,4 @@ func Load() {
         fmt.Println("ERROR decoding toml configuration")
         os.Exit(1)
     }
-
-    //debug 
-    fmt.Println(CBP)
 }
