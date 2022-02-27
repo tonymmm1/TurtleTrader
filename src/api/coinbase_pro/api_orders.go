@@ -68,7 +68,37 @@ func Get_all_fills(order_id string, product_id string, profile_id string, limit 
     return api_account_fills
 }
 
+//func Get_all_orders(limit int64, status []string
+
 func Create_new_order(profile_id string, query_type string, side string, product_id string, stp string, stop string, stop_price string, 
     price string, size string, funds string, time_in_force string, cancel_after string, post_only bool, client_oid string) {
 
+}
+
+func Cancel_all_orders(profile_id string, product_id string) []string {
+    path := "/orders"
+
+    var orders []string
+
+    response_status, response_body := rest_delete_all_orders(path, profile_id, product_id)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &orders); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Cancel all orders")
+    fmt.Println()
+    for order := range orders {
+        fmt.Println("order[",order,"]")
+        fmt.Println(order)
+        fmt.Println()
+    }
+
+    return orders
 }
