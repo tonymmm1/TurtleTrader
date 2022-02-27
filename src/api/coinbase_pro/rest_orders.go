@@ -124,3 +124,39 @@ func rest_delete_all_orders(path string, profile_id string, product_id string) (
 
     return resp.StatusCode(), resp.Body()
 }
+
+func rest_delete_order(path string, order_id string, profile_id string) (int, []byte) {
+    time := strconv.FormatInt(time.Now().Unix(), 10)    //store current Unix time as int
+
+    path2 := path + "?order_id=" + order_id + "&profile_id=" + profile_id
+
+    message := generate_message(time, "DELETE", path2, "") //create hashed message to send
+
+    client := resty.New() //create REST session
+    resp, err := client.R().
+        SetHeaders(map[string] string {
+            "CB-ACCESS-KEY" : config.CBP.Key,
+            "CB-ACCESS-SIGN" : message,
+            "CB-ACCESS-TIMESTAMP" : time,
+            "CB-ACCESS-PASSPHRASE" : config.CBP.Password,
+            "Accept" : "application/json",
+            "Content-Type" : "application/json"}).
+        SetQueryParams(map[string] string {
+            "order_id" : order_id,
+            "profile_id" : profile_id}).
+        SetAuthToken(config.CBP.Key).
+        Delete(config.CBP.Host + path)
+
+    // debug
+    fmt.Println("Response Info:")
+    fmt.Println("  Error      :", err)
+    fmt.Println("  Status Code:", resp.StatusCode())
+    fmt.Println("  Status     :", resp.Status())
+    fmt.Println("  Proto      :", resp.Proto())
+    fmt.Println("  Time       :", resp.Time())
+    fmt.Println("  Received At:", resp.ReceivedAt())
+    fmt.Println("  Body       :\n", resp)
+    fmt.Println()
+
+    return resp.StatusCode(), resp.Body()
+}

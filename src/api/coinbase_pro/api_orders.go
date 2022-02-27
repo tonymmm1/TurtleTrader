@@ -226,3 +226,27 @@ func Get_single_order(order_id string) Order {
 
     return order
 }
+
+func Cancel_order(order_id string, profile_id string) string {
+    path := "/orders/" + order_id
+
+    var order string
+
+    response_status, response_body := rest_delete_order(path, order_id, profile_id)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Cancel an order")
+    fmt.Println()
+    fmt.Println(order)
+
+    return order
+}
