@@ -1,5 +1,6 @@
 #Host = "https://api-public.sandbox.exchange.coinbase.com" #sandbox 
 #Host = "https://api.pro.coinbase.com" #production
+#Websocket = "wss://ws-feed.exchange.coinbase.com"
 #Key = ""
 #Password = ""
 #Secret = ""

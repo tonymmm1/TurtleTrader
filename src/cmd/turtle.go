@@ -34,4 +34,6 @@ func main() {
     fmt.Println()
 
     usage()
+
+    fmt.Println()
 }
