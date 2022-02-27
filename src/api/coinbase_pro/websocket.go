@@ -125,10 +125,8 @@ func Websocket_run(channel string, product_ids []string) { //Websocket handler
     message := message {
         Type: "subscribe",
         Channels: messageChannels {
-            messageChannels {
-                Name: channel,
-                Product_ids: product_ids,
-            },
+            Name: channel,
+            Product_ids: product_ids,
         },
     }
 
