@@ -9,10 +9,3 @@ const ( //Common return codes (https://docs.cloud.coinbase.com/exchange/docs/req
     STATUS_CODE_NOT_FOUND = 404             //Not Found
     STATUS_CODE_INTERNAL_SERVER_ERROR = 500 //Internal Server Error -- We had a problem with our server
 )
-
-type Config struct { //Coinbase Pro configuration
-    Host string
-    Key string
-    Password string
-    Secret string
-}
