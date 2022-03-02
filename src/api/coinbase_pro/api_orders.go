@@ -51,6 +51,20 @@ type Order struct { //Get single/all orders
     Client_oid string `json:"client_oid"`
 }
 
+const ( //Time in force https://docs.cloud.coinbase.com/exchange/reference/exchangerestapi_postorders#time-in-force
+    TIME_IN_FORCE_GTC string = "GTC"
+    TIME_IN_FORCE_GTT = "GTT"
+    TIME_IN_FORCE_IOC = "IOC"
+    TIME_IN_FORCE_FOK = "FOK"
+)
+
+const ( //Self-trade prevention https://docs.cloud.coinbase.com/exchange/reference/exchangerestapi_postorders#self-trade-prevention
+    SELF_TRADE_PREV_DC string = "dc"
+    SELF_TRADE_PREV_CO = "co"
+    SELF_TRADE_PREV_CN = "cn"
+    SELF_TRADE_PREV_CB = "cb"
+)
+
 /*  Orders
 *       Get all fills       (GET)
 *       Get all orders      (GET)
@@ -193,6 +207,31 @@ func Create_order_market_fund(profile_id string, side string, product_id string,
 
     //debug
     fmt.Println("Create a new order: Market")
+    fmt.Println()
+    fmt.Println(order)
+    fmt.Println()
+
+    return order
+}
+
+func Create_order_stop(profile_id string, side string, stp string, stop string, stop_price float64, time_in_force string, cancel_after string, product_id string, price float64, size float64) Order {
+    path := "/orders"
+
+    var order Order
+
+    response_status, response_body := rest_post_create_order_stop(path, profile_id, side, stp, stop, stop_price, time_in_force, cancel_after, product_id, price, size)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Create a new order: Stop")
     fmt.Println()
     fmt.Println(order)
     fmt.Println()
