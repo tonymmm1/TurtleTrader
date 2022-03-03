@@ -9,8 +9,8 @@ import (
 
 type Price struct { //Get signed prices
     Timestamp string `json:"timestamp"`
-    Messages []string `json:"messages"`
-    Signatures []string `json:"signatures"`
+//    Messages []string `json:"messages"`
+//    Signatures []string `json:"signatures"`
     Prices map[string] interface {} `json:"prices"`
 }
 
@@ -38,6 +38,8 @@ func Get_signed_prices() Price {
     fmt.Print("Get signed prices")
     fmt.Println()
     fmt.Println(prices.Timestamp)
+
+    /*
     for message := range prices.Messages {
         fmt.Println("prices.Messages[", message, "]")
         fmt.Println(prices.Messages[message])
@@ -49,6 +51,8 @@ func Get_signed_prices() Price {
         fmt.Println(prices.Signatures[signature])
         fmt.Println()
     }
+    */
+
     fmt.Println()
     for k, v := range prices.Prices {
         fmt.Println(k, ":", v)
