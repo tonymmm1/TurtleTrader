@@ -17,16 +17,11 @@ const ( //Error messages (https://docs.cloud.coinbase.com/exchange/docs/websocke
     WEBSOCKET_ErrSlowRead = 3
 )
 
-//Message structs
-type messageChannels struct { //Websocket request channels
-    Name string `json:"name"`
-    Product_ids []string `json:"product_ids"`
-}
-
+//Message struct
 type message struct { //Websocket request message
     Type string `json:"type"`
     Product_ids []string `json:"product_ids"`
-    Channels messageChannels `json:"channels"`
+    Channels []string `json:"channels"`
 }
 
 //Channels (https://docs.cloud.coinbase.com/exchange/docs/websocket-channels)
@@ -95,7 +90,7 @@ type messageFull struct { //The full channel
     Sequence string `json:"sequence"`
 }
 
-func Websocket_run(channel string, product_ids []string) { //Websocket handler
+func Websocket_run(product_ids []string, channels []string) { //Websocket handler
     interrupt := make(chan os.Signal, 1)
     signal.Notify(interrupt, os.Interrupt)
 
@@ -124,10 +119,8 @@ func Websocket_run(channel string, product_ids []string) { //Websocket handler
 
     message := message {
         Type: "subscribe",
-        Channels: messageChannels {
-            Name: channel,
-            Product_ids: product_ids,
-        },
+        Product_ids: product_ids,
+        Channels: channels,
     }
 
     message_json, err := json.Marshal(message)
