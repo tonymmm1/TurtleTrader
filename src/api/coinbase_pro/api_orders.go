@@ -214,6 +214,31 @@ func Create_order_market_fund(profile_id string, side string, product_id string,
     return order
 }
 
+func Create_order_limit(profile_id string, side string, stp string, time_in_force string, cancel_after string, post_only bool, product_id string, price float64, size float64) Order {
+    path := "/orders"
+
+    var order Order
+
+    response_status, response_body := rest_post_create_order_limit(path, profile_id, side, stp, time_in_force, cancel_after, post_only, product_id, price, size)
+    if response_status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", response_status)
+        os.Exit(1)
+    }
+
+    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
+        fmt.Println("ERROR decoding REST response")
+        os.Exit(1)
+    }
+
+    //debug
+    fmt.Println("Create a new order: Limit")
+    fmt.Println()
+    fmt.Println(order)
+    fmt.Println()
+
+    return order
+}
+
 func Create_order_stop(profile_id string, side string, stp string, stop string, stop_price float64, time_in_force string, cancel_after string, product_id string, price float64, size float64) Order {
     path := "/orders"
 
