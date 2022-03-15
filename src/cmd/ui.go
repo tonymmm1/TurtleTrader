@@ -11,9 +11,19 @@ import (
 )
 
 const (
-    VIEW_1 = "prices"
-    VIEW_2 = "trades"
-    VIEW_3 = "profit"
+    //headers
+    VIEW_PRICES_HEADER = "prices_header"
+    VIEW_TRADES_HEADER = "trades_header"
+    VIEW_PROFITS_HEADER = "profits_header"
+    VIEW_MANUAL_HEADER = "manual_header"
+    VIEW_BALANCES_HEADER = "balances_header"
+
+    //views
+    VIEW_PRICES = "prices"
+    VIEW_TRADES = "trades"
+    VIEW_PROFITS = "profits"
+    VIEW_MANUAL = "manual"
+    VIEW_BALANCES = "balances"
 )
 
 func Ui_init() {
@@ -42,27 +52,32 @@ func Ui_init() {
 func Ui_layout(g *gocui.Gui) error {
     maxX, maxY := g.Size()
 
-    //VIEW_1
-    if v, err := g.SetView(VIEW_1, 0, 0, maxX/2, maxY-1); err != nil {
+    //VIEW_PRICES_HEADER
+    if v, err := g.SetView(VIEW_PRICES_HEADER, 0, 0, maxX/6, 2); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
-
-        fmt.Fprintf(v, "Prices")
+        fmt.Fprintln(v, "Prices")
+    }
+    //VIEW_PRICES
+    if v, err := g.SetView(VIEW_PRICES, 0, 2, maxX/6, maxY-2); err != nil {
+        if err != gocui.ErrUnknownView {
+            return err
+        }
+        fmt.Fprintln(v, "Prices")
 
         go func(g *gocui.Gui) {
             var count uint64 = 0
             for {
                 //output := cbp.Get_all_currencies()
                 g.Update(func(g *gocui.Gui) error {
-                    v, err := g.View(VIEW_1)
+                    v, err := g.View(VIEW_PRICES)
                         if err != nil {
                             return err
                         }
 
                         v.Clear()
 
-                        fmt.Fprintln(v, "Prices")
                         //fmt.Fprint(v, output)
                         fmt.Fprintln(v, "refresh: 1 second")
                         fmt.Fprintln(v, "elapsed:", count, "seconds")
@@ -77,6 +92,7 @@ func Ui_layout(g *gocui.Gui) error {
 
         }(g)
     }
+    /*
     //VIEW_2
     if v, err := g.SetView(VIEW_2, maxX/2, 0, maxX/2+50, maxY-1); err != nil {
         if err != gocui.ErrUnknownView {
@@ -91,6 +107,7 @@ func Ui_layout(g *gocui.Gui) error {
         }
         fmt.Fprintln(v, "Profit")
     }
+    */
     return nil
     
 }
