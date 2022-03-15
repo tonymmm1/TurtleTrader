@@ -34,12 +34,14 @@ func Get_fees() Fee {
     }
 
     //debug
+    /*
     fmt.Println("Get fees")
     fmt.Println()
     fmt.Println(fees.Taker_fee_rate)
     fmt.Println(fees.Maker_fee_rate)
     fmt.Println(fees.Usd_volume)
     fmt.Println()
+    */
 
     return fees
 }

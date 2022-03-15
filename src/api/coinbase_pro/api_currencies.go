@@ -53,6 +53,7 @@ func Get_all_currencies() []Currency {
     }
 
     //debug
+    /*
     fmt.Println("Get all known currencies")
     fmt.Println()
     for currency := range currencies {
@@ -87,7 +88,7 @@ func Get_all_currencies() []Currency {
         fmt.Println(currencies[currency].Details.Max_withdrawal_amount)
         fmt.Println()
     }
-
+    */
     return currencies
 }
 

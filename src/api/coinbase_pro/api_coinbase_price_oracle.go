@@ -35,10 +35,11 @@ func Get_signed_prices() Price {
     }
 
     //debug
+    /*
     fmt.Print("Get signed prices")
     fmt.Println()
     fmt.Println(prices.Timestamp)
-
+    */
     /*
     for message := range prices.Messages {
         fmt.Println("prices.Messages[", message, "]")
@@ -52,12 +53,13 @@ func Get_signed_prices() Price {
         fmt.Println()
     }
     */
-
+    /*
     fmt.Println()
     for k, v := range prices.Prices {
         fmt.Println(k, ":", v)
     }
     fmt.Println()
+    */
 
     return prices
 }

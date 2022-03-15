@@ -36,7 +36,7 @@ func rest_get(path string) (int, []byte) { //handles GET requests
     message := generate_message(time, "GET", path, "") //create hashed message to send
 
     client := resty.New() //create REST session
-    resp, err := client.R().
+    resp, _ := client.R().
         SetHeader("Accept", "application/json").
         SetHeaders(map[string] string {
             "CB-ACCESS-KEY" : config.CBP.Key,
@@ -48,6 +48,7 @@ func rest_get(path string) (int, []byte) { //handles GET requests
         Get(config.CBP.Host + path)
 
     // debug
+    /*
     fmt.Println("Response Info:")
     fmt.Println("  Error      :", err)
     fmt.Println("  Status Code:", resp.StatusCode())
@@ -57,6 +58,6 @@ func rest_get(path string) (int, []byte) { //handles GET requests
     fmt.Println("  Received At:", resp.ReceivedAt())
     fmt.Println("  Body       :\n", resp)
     fmt.Println()
-
+    */
     return resp.StatusCode(), resp.Body()
 }
