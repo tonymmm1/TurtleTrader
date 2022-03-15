@@ -51,6 +51,7 @@ func Ui_layout(g *gocui.Gui) error {
         fmt.Fprintf(v, "Prices")
 
         go func(g *gocui.Gui) {
+            var count uint64 = 0
             for {
                 //output := cbp.Get_all_currencies()
                 g.Update(func(g *gocui.Gui) error {
@@ -63,8 +64,12 @@ func Ui_layout(g *gocui.Gui) error {
 
                         fmt.Fprintln(v, "Prices")
                         //fmt.Fprint(v, output)
-                        fmt.Fprintln(v, time.Now().Unix())
+                        fmt.Fprintln(v, "refresh: 1 second")
+                        fmt.Fprintln(v, "elapsed:", count, "seconds")
+                        fmt.Fprintln(v, "time:", time.Now())
+                        fmt.Fprintln(v, "unix:", time.Now().Unix())
 
+                        count += 1
                         return nil 
                 })
                 time.Sleep(1 * time.Second)
