@@ -88,9 +88,9 @@ func Get_all_fills(order_id string, product_id string, profile_id string, limit 
 func Get_all_orders(limit int64, status []string) []byte {
     path := "/orders"
 
-    status, response := rest_get_all_orders(path, limit, status)
-    if status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", status)
+    rstatus, response := rest_get_all_orders(path, limit, status)
+    if rstatus != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", rstatus)
         os.Exit(1)
     }
 
