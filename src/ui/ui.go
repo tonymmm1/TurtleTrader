@@ -1,11 +1,13 @@
 package ui
 
 import (
-    //"fmt"
+    "fmt"
+    "encoding/json"
     "log"
+    "sort"
     "time"
 
-    //cbp "turtle/src/api/coinbase_pro"
+    cbp "turtle/src/api/coinbase_pro"
 
     "github.com/jroimartin/gocui"
 )
@@ -51,7 +53,7 @@ func layout(g *gocui.Gui) error {
             return err
         }
 
-        go func(g *gocui.Gui) {
+        go func(g *gocui.Gui) { //redraw view
             for {
                 g.Update(func(g *gocui.Gui) error {
                     v, err := g.View(VIEW_PRICES)
@@ -62,12 +64,30 @@ func layout(g *gocui.Gui) error {
                         v.Clear()
 
                         v.Title = VIEW_PRICES
+
+                        response := cbp.Get_signed_prices() //Get prices of cryptos
+
+                        var prices cbp.Price
+
+                        if err := json.Unmarshal(response, &prices); err != nil { //JSON unmarshal REST response body to store as struct
+                            fmt.Println("ERROR decoding REST response")
+                        }
+
+                        //sort cryptos by name alphabetically
+                        keys := make([]string, 0, len(prices.Prices))
+                        for k := range prices.Prices {
+                            keys = append(keys, k)
+                        }
+                        sort.Strings(keys)
+
+                        for _, k := range keys {
+                            fmt.Fprintln(v, k, prices.Prices[k])
+                        }
                         
                         return nil 
                 })
-                time.Sleep(1 * time.Second)
+                time.Sleep(1 * time.Second) //sleep for 1 second
             }
-
         }(g)
     }
     //VIEW_TRADES
