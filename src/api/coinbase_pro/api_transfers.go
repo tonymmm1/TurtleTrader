@@ -143,7 +143,7 @@ func transfer_coinbase_account(profile_id string, amount string, account_id stri
         os.Exit(1)
     }
 
-    return reposit
+    return response
 }
 
 func transfer_payment_account(profile_id string, amount string, account_id string, currency string) []byte {
@@ -155,7 +155,7 @@ func transfer_payment_account(profile_id string, amount string, account_id strin
         os.Exit(1)
     }
 
-    return reposit
+    return response
 }
 
 func Get_all_payments() []byte {
