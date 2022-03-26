@@ -2,7 +2,6 @@
 package coinbase_pro
 
 import (
-    "encoding/json"
     "fmt"
     "os"
 )
@@ -74,293 +73,110 @@ const ( //Self-trade prevention https://docs.cloud.coinbase.com/exchange/referen
 *       Cancel an order     (DELETE)
 */
 
-func Get_all_fills(order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []Fill {
+func Get_all_fills(order_id string, product_id string, profile_id string, limit int64, before int64, after int64) []byte {
     path := "/fills"
 
-    var api_account_fills []Fill
-
-    response_status, response_body := rest_get(path)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_get(path)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &api_account_fills); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get all fills")
-    fmt.Println()
-    for fill := range api_account_fills {
-        fmt.Println("api_account_fills[", fill, "]")
-        fmt.Println(api_account_fills[fill].Trade_id)
-        fmt.Println(api_account_fills[fill].Product_id)
-        fmt.Println(api_account_fills[fill].Order_id)
-        fmt.Println(api_account_fills[fill].User_id)
-        fmt.Println(api_account_fills[fill].Profile_id)
-        fmt.Println(api_account_fills[fill].Liquidity)
-        fmt.Println(api_account_fills[fill].Price)
-        fmt.Println(api_account_fills[fill].Size)
-        fmt.Println(api_account_fills[fill].Fee)
-        fmt.Println()
-    }
-
-    return api_account_fills
+    return response
 }
 
-func Get_all_orders(limit int64, status []string) []Order {
+func Get_all_orders(limit int64, status []string) []byte {
     path := "/orders"
 
-    var orders []Order
-
-    response_status, response_body := rest_get_all_orders(path, limit, status)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_get_all_orders(path, limit, status)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &orders); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get all orders")
-    fmt.Println()
-    for order := range orders {
-        fmt.Println("orders[",order,"]")
-        fmt.Println(orders[order].Id)
-        fmt.Println(orders[order].Price)
-        fmt.Println(orders[order].Size)
-        fmt.Println(orders[order].Product_id)
-        fmt.Println(orders[order].Profile_id)
-        fmt.Println(orders[order].Side)
-        fmt.Println(orders[order].Funds)
-        fmt.Println(orders[order].Specified_funds)
-        fmt.Println(orders[order].Type)
-        fmt.Println(orders[order].Time_in_force)
-        fmt.Println(orders[order].Expire_time)
-        fmt.Println(orders[order].Post_only)
-        fmt.Println(orders[order].Created_at)
-        fmt.Println(orders[order].Done_at)
-        fmt.Println(orders[order].Done_reason)
-        fmt.Println(orders[order].Reject_reason)
-        fmt.Println(orders[order].Fill_fees)
-        fmt.Println(orders[order].Filled_size)
-        fmt.Println(orders[order].Executed_value)
-        fmt.Println(orders[order].Status)
-        fmt.Println(orders[order].Settled)
-        fmt.Println(orders[order].Stop)
-        fmt.Println(orders[order].Stop_price)
-        fmt.Println(orders[order].Funding_amount)
-        fmt.Println(orders[order].Client_oid)
-        fmt.Println()
-    }
-
-    return orders
+    return response
 }
 
-//func Create_order_limit()
-
-func Create_order_market_size(profile_id string, side string, product_id string, size float64) Order {
+func Create_order_market_size(profile_id string, side string, product_id string, size float64) []byte {
     path := "/orders"
 
-    var order Order
-
-    response_status, response_body := rest_post_create_order_market_size(path, profile_id, side, product_id, size)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_post_create_order_market_size(path, profile_id, side, product_id, size)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Create a new order: Market")
-    fmt.Println()
-    fmt.Println(order)
-    fmt.Println()
-
-    return order
+    return response
 }
 
-func Create_order_market_fund(profile_id string, side string, product_id string, fund float64) Order {
+func Create_order_market_fund(profile_id string, side string, product_id string, fund float64) []byte {
     path := "/orders"
 
-    var order Order
-
-    response_status, response_body := rest_post_create_order_market_fund(path, profile_id, side, product_id, fund)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_post_create_order_market_fund(path, profile_id, side, product_id, fund)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Create a new order: Market")
-    fmt.Println()
-    fmt.Println(order)
-    fmt.Println()
-
-    return order
+    return reponse
 }
 
-func Create_order_limit(profile_id string, side string, stp string, time_in_force string, cancel_after string, post_only bool, product_id string, price float64, size float64) Order {
+func Create_order_limit(profile_id string, side string, stp string, time_in_force string, cancel_after string, post_only bool, product_id string, price float64, size float64) []byte {
     path := "/orders"
 
-    var order Order
-
-    response_status, response_body := rest_post_create_order_limit(path, profile_id, side, stp, time_in_force, cancel_after, post_only, product_id, price, size)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_post_create_order_limit(path, profile_id, side, stp, time_in_force, cancel_after, post_only, product_id, price, size)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Create a new order: Limit")
-    fmt.Println()
-    fmt.Println(order)
-    fmt.Println()
-
-    return order
+    return response
 }
 
-func Create_order_stop(profile_id string, side string, stp string, stop string, stop_price float64, time_in_force string, cancel_after string, product_id string, price float64, size float64) Order {
+func Create_order_stop(profile_id string, side string, stp string, stop string, stop_price float64, time_in_force string, cancel_after string, product_id string, price float64, size float64) []byte {
     path := "/orders"
 
-    var order Order
-
-    response_status, response_body := rest_post_create_order_stop(path, profile_id, side, stp, stop, stop_price, time_in_force, cancel_after, product_id, price, size)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_post_create_order_stop(path, profile_id, side, stp, stop, stop_price, time_in_force, cancel_after, product_id, price, size)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Create a new order: Stop")
-    fmt.Println()
-    fmt.Println(order)
-    fmt.Println()
-
-    return order
+    return reponse
 }
 
-func Cancel_all_orders(profile_id string, product_id string) []string {
+func Cancel_all_orders(profile_id string, product_id string) []byte {
     path := "/orders"
 
-    var orders []string
-
-    response_status, response_body := rest_delete_all_orders(path, profile_id, product_id)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_delete_all_orders(path, profile_id, product_id)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &orders); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Cancel all orders")
-    fmt.Println()
-    for order := range orders {
-        fmt.Println("order[",order,"]")
-        fmt.Println(order)
-        fmt.Println()
-    }
-
-    return orders
+    return reponse
 }
 
-func Get_single_order(order_id string) Order {
+func Get_single_order(order_id string) []byte {
     path := "/orders/" + order_id
 
-    var order Order
-
-    response_status, response_body := rest_get(path)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_get(path)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get single order")
-    fmt.Println()
-    fmt.Println(order.Id)
-    fmt.Println(order.Price)
-    fmt.Println(order.Size)
-    fmt.Println(order.Product_id)
-    fmt.Println(order.Profile_id)
-    fmt.Println(order.Side)
-    fmt.Println(order.Funds)
-    fmt.Println(order.Specified_funds)
-    fmt.Println(order.Type)
-    fmt.Println(order.Time_in_force)
-    fmt.Println(order.Expire_time)
-    fmt.Println(order.Post_only)
-    fmt.Println(order.Created_at)
-    fmt.Println(order.Done_at)
-    fmt.Println(order.Done_reason)
-    fmt.Println(order.Reject_reason)
-    fmt.Println(order.Fill_fees)
-    fmt.Println(order.Filled_size)
-    fmt.Println(order.Executed_value)
-    fmt.Println(order.Status)
-    fmt.Println(order.Settled)
-    fmt.Println(order.Stop)
-    fmt.Println(order.Stop_price)
-    fmt.Println(order.Funding_amount)
-    fmt.Println(order.Client_oid)
-    fmt.Println()
-
-    return order
+    return response
 }
 
-func Cancel_order(order_id string, profile_id string) string {
+func Cancel_order(order_id string, profile_id string) []byte {
     path := "/orders/" + order_id
 
-    var order string
-
-    response_status, response_body := rest_delete_order(path, order_id, profile_id)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_delete_order(path, order_id, profile_id)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &order); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Cancel an order")
-    fmt.Println()
-    fmt.Println(order)
-
-    return order
+    return response
 }

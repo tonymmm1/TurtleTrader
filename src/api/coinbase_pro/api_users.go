@@ -2,7 +2,6 @@
 package coinbase_pro
 
 import (
-    "encoding/json"
     "fmt"
     "os"
 )
@@ -42,27 +41,14 @@ type User struct {
 *       Get user exchange limits    (GET)
 */
 
-func Get_user_exchange_limits(user_id string) User {
+func Get_user_exchange_limits(user_id string) []byte {
     path := "/users/" + user_id + "/exchange-limits"
 
-    var user User
-
-    response_status, response_body := rest_get(path)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_get(path)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &user); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get user exchange limits")
-    fmt.Println()
-    fmt.Println(user)
-    fmt.Println()
-
-    return user
+    return response
 }

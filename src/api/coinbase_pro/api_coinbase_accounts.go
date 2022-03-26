@@ -2,7 +2,6 @@
 package coinbase_pro
 
 import (
-    "encoding/json"
     "fmt"
     "os"
 )
@@ -97,151 +96,26 @@ type CryptoAddress struct { //struct to store API generated crypto address
 *       Generate crypto address     (POST)
 */
 
-func Get_all_wallets() []Wallet { //Gets all the user's available Coinbase wallets
+func Get_all_wallets() []byte { //Gets all the user's available Coinbase wallets
     path := "/coinbase-accounts"
 
-    var wallets []Wallet
-
-    response_status, response_body := rest_get(path)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_get(path)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &wallets); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get all Coinbase wallets")
-    fmt.Println()
-    for wallet := range wallets {
-        fmt.Println("wallets[", wallet, "]")
-        fmt.Println()
-        fmt.Println(wallets[wallet].Id)
-        fmt.Println(wallets[wallet].Name)
-        fmt.Println(wallets[wallet].Balance)
-        fmt.Println(wallets[wallet].Currency)
-        fmt.Println(wallets[wallet].Type)
-        fmt.Println(wallets[wallet].Primary)
-        fmt.Println(wallets[wallet].Active)
-        fmt.Println(wallets[wallet].Available_on_consumer)
-        /*if wallets[wallet].Ready == (true || false) {
-            fmt.Println(wallets[wallet].Ready)
-        }*/
-        if wallets[wallet].Wire_deposit_information.Account_name != "" {
-            fmt.Println(wallets[wallet].Wire_deposit_information.Account_number)
-            fmt.Println(wallets[wallet].Wire_deposit_information.Routing_number)
-            fmt.Println(wallets[wallet].Wire_deposit_information.Bank_name)
-            fmt.Println(wallets[wallet].Wire_deposit_information.Bank_address)
-            fmt.Println(wallets[wallet].Wire_deposit_information.Bank_country.Code)
-            fmt.Println(wallets[wallet].Wire_deposit_information.Bank_country.Name)
-            fmt.Println(wallets[wallet].Wire_deposit_information.Account_name)
-            fmt.Println(wallets[wallet].Wire_deposit_information.Account_address)
-            fmt.Println(wallets[wallet].Wire_deposit_information.Reference)
-        }
-        if wallets[wallet].Swift_deposit_information.Account_name != "" {
-            fmt.Println(wallets[wallet].Swift_deposit_information.Account_number)
-            fmt.Println(wallets[wallet].Swift_deposit_information.Routing_number)
-            fmt.Println(wallets[wallet].Swift_deposit_information.Bank_name)
-            fmt.Println(wallets[wallet].Swift_deposit_information.Bank_address)
-            fmt.Println(wallets[wallet].Swift_deposit_information.Bank_country.Code)
-            fmt.Println(wallets[wallet].Swift_deposit_information.Bank_country.Name)
-            fmt.Println(wallets[wallet].Swift_deposit_information.Account_name)
-            fmt.Println(wallets[wallet].Swift_deposit_information.Account_address)
-            fmt.Println(wallets[wallet].Swift_deposit_information.Reference)
-        }
-        if wallets[wallet].Sepa_deposit_information.Account_name != ""{
-            fmt.Println(wallets[wallet].Sepa_deposit_information.Iban)
-            fmt.Println(wallets[wallet].Sepa_deposit_information.Swift)
-            fmt.Println(wallets[wallet].Sepa_deposit_information.Bank_name)
-            fmt.Println(wallets[wallet].Sepa_deposit_information.Bank_address)
-            fmt.Println(wallets[wallet].Sepa_deposit_information.Bank_country_name)
-            fmt.Println(wallets[wallet].Sepa_deposit_information.Account_name)
-            fmt.Println(wallets[wallet].Sepa_deposit_information.Account_address)
-            fmt.Println(wallets[wallet].Sepa_deposit_information.Reference)
-        }
-        if wallets[wallet].Uk_deposit_information.Account_name != "" {
-            fmt.Println(wallets[wallet].Uk_deposit_information.Sort_code)
-            fmt.Println(wallets[wallet].Uk_deposit_information.Account_number)
-            fmt.Println(wallets[wallet].Uk_deposit_information.Bank_name)
-            fmt.Println(wallets[wallet].Uk_deposit_information.Account_name)
-            fmt.Println(wallets[wallet].Uk_deposit_information.Reference)
-        }
-        /*if wallets[wallet].Destination_tag_name != "" {
-            fmt.Println(wallets[wallet].Destination_tag_name)
-        }
-        if wallets[wallet].Destination_tag_regex != "" {
-            fmt.Println(wallets[wallet].Destination_tag_regex)
-        }*/
-        fmt.Println(wallets[wallet].Hold_balance)
-        fmt.Println(wallets[wallet].Hold_currency)
-        fmt.Println()
-    }
-
-    return wallets
+    return response
 }
 
-func Generate_crypto_address(account_id string) CryptoAddress { //Generates a one-time crypto address for depositing crypto.
+func Generate_crypto_address(account_id string) []byte { //Generates a one-time crypto address for depositing crypto.
     path := "/coinbase-accounts/" + account_id + "/addresses"
 
-    var address CryptoAddress
-
-    response_status, response_body := rest_post_address(path)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_post_address(path)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &address); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Generate crypto address")
-    fmt.Println()
-    fmt.Println(address.Id)
-    fmt.Println(address.Address)
-    if address.Address_info.Address != "" {
-        fmt.Println(address.Address_info.Address)
-        fmt.Println(address.Address_info.Destination_tag)
-    }
-    fmt.Println(address.Name)
-    fmt.Println(address.Created_at)
-    fmt.Println(address.Updated_at)
-    if address.Network != "" {
-        fmt.Println(address.Network)
-    }
-    if address.Uri_scheme != "" {
-        fmt.Println(address.Uri_scheme)
-    }
-    fmt.Println(address.Resource)
-    fmt.Println(address.Resource_path)
-    if address.Warnings != nil {
-        for warning := range address.Warnings {
-            fmt.Println()
-            fmt.Println("address.Warnings[", warning, "]")
-            fmt.Println(address.Warnings[warning].Title)
-            fmt.Println(address.Warnings[warning].Details)
-            fmt.Println(address.Warnings[warning].Image_url)
-        }
-    }
-    fmt.Println(address.Exchange_deposit_address)
-    /*if address.Legacy_address != "" {
-        fmt.Println(address.Legacy_address)
-    }
-    if address.Destination_tag != "" {
-        fmt.Println(address.Destination_tag)
-    }
-    if address.Deposit_uri != "" {
-        fmt.Println(address.Deposit_uri)
-    }
-    if address.Callback_url != "" {
-        fmt.Println(address.Callback_url)
-    }*/
-    fmt.Println()
-
-    return address
+    return response
 }
