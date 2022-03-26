@@ -2,7 +2,6 @@
 package coinbase_pro
 
 import (
-    "encoding/json"
     "fmt"
     "os"
 )
@@ -26,120 +25,50 @@ type Profile struct { //Get profiles/Create a profile/Get profile by id/Get prof
 *       Delete a profile                (PUT)
 */
 
-func Get_profiles() []Profile{
+func Get_profiles() []byte {
     path := "/profiles"
 
-    var profiles []Profile
-
-    response_status, response_body := rest_get(path)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_get(path)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &profiles); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get profiles")
-    fmt.Println()
-    for profile := range profiles {
-        fmt.Println("profiles[", profile, "]")
-        fmt.Println(profiles[profile].Id)
-        fmt.Println(profiles[profile].User_id)
-        fmt.Println(profiles[profile].Name)
-        fmt.Println(profiles[profile].Active)
-        fmt.Println(profiles[profile].Is_default)
-        fmt.Println(profiles[profile].Has_margin)
-        fmt.Println(profiles[profile].Created_at)
-    }
-    fmt.Println()
-
-    return profiles
+    return response
 }
 
-func create_profile(name string) Profile {
+func create_profile(name string) []byte {
     path := "/profiles"
 
-    var profile Profile
-
-    response_status, response_body := rest_post_create_profile(path, name)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_post_create_profile(path, name)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &profile); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Create a profile")
-    fmt.Println()
-    fmt.Println(profile.Id)
-    fmt.Println(profile.User_id)
-    fmt.Println(profile.Name)
-    fmt.Println(profile.Active)
-    fmt.Println(profile.Is_default)
-    fmt.Println(profile.Has_margin)
-    fmt.Println(profile.Created_at)
-    fmt.Println()
-
-    return profile
+    return response
 }
 
-func transfer_funds_profiles(from string, to string, currency string, amount string) string {
+func transfer_funds_profiles(from string, to string, currency string, amount string) []byte {
     path := "/profiles/transfer"
 
-    var profile string
-
-    response_status, response_body := rest_post_transfer_funds_profiles(path, from, to, currency, amount)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_post_transfer_funds_profiles(path, from, to, currency, amount)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
-
-    profile = string(response_body) //convert to string
-
-    //debug
-    fmt.Println("Transfer funds between profiles")
-    fmt.Println()
-    fmt.Println(profile)
-    fmt.Println()
-
-    return profile
+    
+    return response
 }
 
-func Get_profile(profile_id string) Profile {
+func Get_profile(profile_id string) []byte {
     path := "/profiles/" + profile_id
 
-    var profile Profile
-
-    response_status, response_body := rest_get(path)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_get(path)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &profile); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get profile by id")
-    fmt.Println()
-    fmt.Println(profile.Id)
-    fmt.Println(profile.User_id)
-    fmt.Println(profile.Name)
-    fmt.Println(profile.Active)
-    fmt.Println(profile.Is_default)
-    fmt.Println(profile.Has_margin)
-    fmt.Println(profile.Created_at)
-    fmt.Println()
-
-    return profile
+    return response
 }

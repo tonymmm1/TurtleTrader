@@ -2,7 +2,6 @@
 package coinbase_pro
 
 import (
-    "encoding/json"
     "fmt"
     "os"
 )
@@ -21,60 +20,26 @@ type Convert struct { //Convert Currency/Get a conversion
     To string `json:"to"`
 }
 
-func convert_currency(profile_id string, from string, to string, amount string, nonce string) Convert { //Converts funds from currency to currency
+func convert_currency(profile_id string, from string, to string, amount string, nonce string) []byte { //Converts funds from currency to currency
     path := "/conversions"
 
-    var convert Convert
-
-    response_status, response_body := rest_post_convert(path, profile_id, from, to, amount, nonce)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_post_convert(path, profile_id, from, to, amount, nonce)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &convert); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Convert currency")
-    fmt.Println()
-    fmt.Println(convert.Id)
-    fmt.Println(convert.Amount)
-    fmt.Println(convert.From_account_id)
-    fmt.Println(convert.To_account_id)
-    fmt.Println(convert.From)
-    fmt.Println(convert.To)
-
-    return convert
+    return response
 }
 
-func Get_conversion(conversion_id string, profile_id string) Convert{
+func Get_conversion(conversion_id string, profile_id string) []byte {
     path := "/conversion/" + conversion_id
 
-    var convert Convert
-
-    response_status, response_body := rest_get_convert(path, profile_id)
-    if response_status != STATUS_CODE_SUCCESS {
-        fmt.Println("ERROR REST GET status code: ", response_status)
+    status, response := rest_get_convert(path, profile_id)
+    if status != STATUS_CODE_SUCCESS {
+        fmt.Println("ERROR REST GET status code: ", status)
         os.Exit(1)
     }
 
-    if err := json.Unmarshal(response_body, &convert); err != nil { //JSON unmarshal REST response body to store as struct
-        fmt.Println("ERROR decoding REST response")
-        os.Exit(1)
-    }
-
-    //debug
-    fmt.Println("Get a conversion")
-    fmt.Println()
-    fmt.Println(convert.Id)
-    fmt.Println(convert.Amount)
-    fmt.Println(convert.From_account_id)
-    fmt.Println(convert.To_account_id)
-    fmt.Println(convert.From)
-    fmt.Println(convert.To)
-
-    return convert
+    return response
 }
