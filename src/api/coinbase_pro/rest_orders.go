@@ -2,6 +2,7 @@
 package coinbase_pro
 
 import (
+        "encoding/json"
         "fmt"
         "strconv"
         "strings"

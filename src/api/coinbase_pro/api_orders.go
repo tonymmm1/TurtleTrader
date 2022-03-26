@@ -118,7 +118,7 @@ func Create_order_market_fund(profile_id string, side string, product_id string,
         os.Exit(1)
     }
 
-    return reponse
+    return response
 }
 
 func Create_order_limit(profile_id string, side string, stp string, time_in_force string, cancel_after string, post_only bool, product_id string, price float64, size float64) []byte {
@@ -142,7 +142,7 @@ func Create_order_stop(profile_id string, side string, stp string, stop string, 
         os.Exit(1)
     }
 
-    return reponse
+    return response
 }
 
 func Cancel_all_orders(profile_id string, product_id string) []byte {
@@ -154,7 +154,7 @@ func Cancel_all_orders(profile_id string, product_id string) []byte {
         os.Exit(1)
     }
 
-    return reponse
+    return response
 }
 
 func Get_single_order(order_id string) []byte {
