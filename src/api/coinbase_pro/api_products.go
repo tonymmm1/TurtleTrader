@@ -141,7 +141,7 @@ func Get_product_stats(product_id string) []byte {
         os.Exit(1)
     }
 
-    return reponse
+    return response
 }
 
 func Get_product_ticker(product_id string) []byte {
