@@ -1,10 +1,12 @@
 package main
 
 import (
-        "fmt"
-        
-        "turtle/src/config"
-        //cbp "turtle/src/api/coinbase_pro"
+	"flag"
+	"fmt"
+	"os"
+	"turtle/src/config"
+	//cbp "turtle/src/api/coinbase_pro"
+	"turtle/src/ui"
 )
 
 type CbpConfig struct { //Coinbase Pro configuration
@@ -14,26 +16,45 @@ type CbpConfig struct { //Coinbase Pro configuration
     Secret string
 }
 
-
-func usage() {
-    usage := 
-    `TurtleTrader: crypto-currency trading bot
-Usage: turtle [options] ...
-    -h,--help       Show this help message
-    -v,--verbose    Show verbose output`
-    fmt.Printf("%s\n\n", usage)
+func init() {
+	flag.BoolVar(&config.Debug, "d", false, "enable debug mode")
+	flag.BoolVar(&config.Debug, "debug", false, "enable debug mode")
 }
 
 func main() {
+	help := flag.Bool("help", false, "Display help information")
+	flag.BoolVar(help, "h", false, "Display help information")
+
+	flag.Usage = func() {
+		fmt.Fprintf(flag.CommandLine.Output(), "TurtleTrader: crypto-currency trading bot\n")
+		fmt.Fprintf(flag.CommandLine.Output(), "Usage: %s [options]\n", os.Args[0])
+
+		// Manually format each flag
+		fmt.Fprintf(flag.CommandLine.Output(), "  -d        %s\n", "Enable debug mode")
+		fmt.Fprintf(flag.CommandLine.Output(), "  -debug    %s\n", "Enable debug mode")
+		fmt.Fprintf(flag.CommandLine.Output(), "  -h        %s\n", "Display help information")
+		fmt.Fprintf(flag.CommandLine.Output(), "  -help     %s\n", "Display help information")
+	}
+
+	//Parse flags
+	flag.Parse()
+
+	if *help {
+		flag.Usage()
+		os.Exit(0)
+	}
+
     fmt.Println("TurtleTrader")
     fmt.Println()
+
+	if config.Debug {
+		fmt.Println("Debug mode enabled")
+	}
 
     fmt.Println("Loading api.toml")
     config.Load()
     
     fmt.Println()
 
-    usage()
-
-    fmt.Println()
+	ui.Init()
 }

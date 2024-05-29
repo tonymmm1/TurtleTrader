@@ -1,14 +1,14 @@
 package ui
 
 import (
-    "fmt"
     "encoding/json"
+    "fmt"
     "log"
     "sort"
     "time"
 
     cbp "turtle/src/api/coinbase_pro"
-
+    "turtle/src/config"
     "github.com/jroimartin/gocui"
 )
 
@@ -19,6 +19,7 @@ const (
     VIEW_PROFITS = "profits"
     VIEW_MANUAL = "manual"
     VIEW_BALANCES = "balances"
+	VIEW_CONFIG = "config"
 )
 
 func Init() {
@@ -46,15 +47,18 @@ func Init() {
 
 func layout(g *gocui.Gui) error {
     maxX, maxY := g.Size()
+	refreshDuration := time.Duration(config.Refresh * float32(time.Second))
 
     //VIEW_PRICES
-    if _, err := g.SetView(VIEW_PRICES, 0, 0, maxX/6, maxY-1); err != nil {
+    if _, err := g.SetView(VIEW_PRICES, 0, (maxY/10), maxX/6, maxY-1); err != nil {
         if err != gocui.ErrUnknownView {
             return err
         }
 
+		ticker := time.NewTicker(refreshDuration)
+
         go func(g *gocui.Gui) { //redraw view
-            for {
+            for range ticker.C {
                 g.Update(func(g *gocui.Gui) error {
                     v, err := g.View(VIEW_PRICES)
                         if err != nil {
@@ -71,6 +75,7 @@ func layout(g *gocui.Gui) error {
 
                         if err := json.Unmarshal(response, &prices); err != nil { //JSON unmarshal REST response body to store as struct
                             fmt.Println("ERROR decoding REST response")
+							return nil
                         }
 
                         //sort cryptos by name alphabetically
@@ -80,13 +85,14 @@ func layout(g *gocui.Gui) error {
                         }
                         sort.Strings(keys)
 
+						keyWidth := 4
                         for _, k := range keys {
-                            fmt.Fprintln(v, k, prices.Prices[k])
+                            //fmt.Fprintf(v, "%-*s %v\n", 20, k, "\t", prices.Prices[k])
+							fmt.Fprintf(v, "%-*s %v\n", keyWidth, k, prices.Prices[k])
                         }
                         
                         return nil 
                 })
-                time.Sleep(1 * time.Second) //sleep for 1 second
             }
         }(g)
     }
@@ -110,6 +116,44 @@ func layout(g *gocui.Gui) error {
             return err
         }
         v.Title = VIEW_MANUAL
+    }
+	//VIEW_CONFIG
+    if v, err := g.SetView(VIEW_CONFIG, 0, 0, maxX/6, (maxY/10)-1); err != nil {
+        if err != gocui.ErrUnknownView {
+            return err
+        }
+        v.Title = VIEW_CONFIG
+		ticker := time.NewTicker(refreshDuration)
+
+		//output
+		fmt.Fprintln(v, "Debug: ", config.Debug)
+		fmt.Fprintf(v, "Refresh: %.1fs\n", config.Refresh)
+		fmt.Fprintln(v, "Time: ", time.Now().Format("15:04:05"))
+
+		go func(g *gocui.Gui) { //redraw view
+            for range ticker.C {
+                g.Update(func(g *gocui.Gui) error {
+                    v, err := g.View(VIEW_CONFIG)
+                        if err != nil {
+                            return err
+                        }
+
+                        v.Clear()
+
+                        v.Title = VIEW_CONFIG
+
+						currentTime := time.Now().Format("15:04:05")
+
+						//output
+						fmt.Fprintln(v, "Debug: ", config.Debug)
+						fmt.Fprintf(v, "Refresh: %.1fs\n", config.Refresh)
+						fmt.Fprintln(v, "Time: ", currentTime)
+
+                        return nil
+                })
+                //time.Sleep(1 * time.Second) //sleep for 1 second
+            }
+        }(g)
     }
 
     return nil

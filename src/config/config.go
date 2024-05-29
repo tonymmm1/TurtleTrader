@@ -8,7 +8,9 @@ import (
     "github.com/BurntSushi/toml"
 )
 
+var Debug bool
 var CBP Coinbase_pro
+var Refresh float32 = 1.0 //default 1.0
 
 func Load() {
     file := "api.toml" //default configuration file

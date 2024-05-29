@@ -48,15 +48,7 @@ func rest_get(path string) (int, []byte) { //handles GET requests
         Get(config.CBP.Host + path)
 
     // debug
-    fmt.Println("Response Info:")
-    fmt.Println("  Error      :", err)
-    fmt.Println("  Status Code:", resp.StatusCode())
-    fmt.Println("  Status     :", resp.Status())
-    fmt.Println("  Proto      :", resp.Proto())
-    fmt.Println("  Time       :", resp.Time())
-    fmt.Println("  Received At:", resp.ReceivedAt())
-    fmt.Println("  Body       :\n", resp)
-    fmt.Println()
+	rest_debug(resp, err)
 
     return resp.StatusCode(), resp.Body()
 }
